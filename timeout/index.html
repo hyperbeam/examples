@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Hyperbeam timeout example ⏰</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+      }
+
+      button {
+        font-size: 1em;
+        padding: 4px 6px;
+      }
+
+      .modal {
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgb(0,0,0);
+        background-color: rgba(0,0,0,0.4);
+      }
+
+      .modal-content {
+        background-color: #fefefe;
+        margin: 15% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 500px;
+        border-radius: 8px;
+      }
+
+      .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+      }
+
+      .close:hover,
+      .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+      }
+      
+      .timeout {
+        font-weight: bold;
+      }
+
+      .managePremium {
+        margin-bottom: 5px;
+      }
+
+      .hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="managePremium hidden" id="upsell">
+      Tired of timeouts? <button class="upgradeBtn">Upgrade</button>
+    </div>
+    <div class="managePremium hidden" id="cancel">
+      Manage your premium: <button class="cancelBtn">Cancel</button>
+    </div>
+    <div class="managePremium hidden" id="restart">
+      <span id="closeReason"></span><button id="restartBtn">Restart</button>
+    </div>
+    <div id="absoluteTimeoutModal" class="modal hidden">
+      <div class="modal-content">
+        <span class="close closeModal">&times;</span>
+        <h1>Level up your experience</h1>
+        <p>Your free co-browser will time out in <span class="timeout"></span>.</p>
+        <p>Tired of timeouts? Subscribe to get unlimited co-browsing.</p>
+        <button class="closeModal">Maybe later</button>
+        <button class="upgradeBtn">Upgrade</button>
+      </div>
+    </div>
+    <div id="inactiveTimeoutModal" class="modal hidden">
+      <div class="modal-content">
+        <span class="close closeModal">&times;</span>
+        <h1>Are you still there?</h1>
+        <p>Your session will close in <span class="timeout"></span> due to inactivity.</p>
+        <button class="closeModal">I'm still here!</button>
+      </div>
+    </div>
+    <div id="hbContainer" style="height:720px;width:1280px"></div>
+    <script type="module">
+      import Hyperbeam from "https://unpkg.com/@hyperbeam/web@latest/dist/index.js";
+
+      let hb;
+      useHyperbeam();
+      addDOMHandlers();
+
+      async function useHyperbeam() {
+        const resp = await fetch("/computer");
+        const {hasPremium, computer} = await resp.json();
+        restart.classList.add("hidden");
+        setPremium(hasPremium);
+        hb = await Hyperbeam(hbContainer, computer.embed_url, {
+          onCloseWarning(e) {
+            if (e.deadline) {
+              showCloseWarning(e.type, e.deadline.delay);
+            } else {
+              hideCloseWarning(e.type);
+            }
+          },
+          onDisconnect(e) {
+            showDisconnect(e.type);
+            hb.destroy();
+            hb = undefined;
+          }
+        });
+      }
+
+      let interval;
+      function beginCountdown(delay) {
+        if (interval) {
+          clearInterval(interval);
+        }
+        let seconds = Math.floor(delay / 1000);
+        const timeouts = document.getElementsByClassName("timeout");
+        const updateTimeouts = () => {
+          for (const timeout of timeouts) {
+            timeout.innerText = seconds.toString() + "s";
+          }
+        };
+        updateTimeouts();
+        interval = setInterval(() => {
+          seconds -= 1;
+          updateTimeouts();
+        }, 1000);
+      }
+
+      function showCloseWarning(type, delay) {
+        switch (type) {
+          case "inactive":
+            beginCountdown(delay);
+            inactiveTimeoutModal.classList.remove("hidden");
+            break;
+          case "absolute":
+            beginCountdown(delay);
+            absoluteTimeoutModal.classList.remove("hidden");
+            break;
+        }
+      }
+
+      function hideCloseWarning(type) {
+        switch (type) {
+          case "inactive":
+            inactiveTimeoutModal.classList.add("hidden");
+            break;
+          case "absolute":
+            absoluteTimeoutModal.classList.add("hidden");
+            break;
+        }
+      }
+
+      function showDisconnect(type) {
+        const modals = document.getElementsByClassName("modal");
+        for (const modal of modals) {
+          modal.classList.add("hidden");
+        }
+        restart.classList.remove("hidden");
+        switch (type) {
+          case "inactive":
+            closeReason.innerText = "Co-browser shut down due to inactivity ";
+            break;
+          case "absolute":
+            closeReason.innerText = "Co-browser free time exceeded ";
+            break;
+        }
+      }
+
+      function setPremium(hasPremium) {
+        if (hasPremium) {
+          upsell.classList.add("hidden");
+          cancel.classList.remove("hidden");
+        } else {
+          cancel.classList.add("hidden");
+          upsell.classList.remove("hidden");
+        }
+      }
+
+      async function onUpgrade(e) {
+        e.target.disabled = true;
+        await fetch("/upgrade", {method: "POST"});
+        setPremium(true);
+        e.target.disabled = false;
+      }
+
+      async function onCancel(e) {
+        e.target.disabled = true;
+        await fetch("/cancel", {method: "POST"});
+        setPremium(false);
+        e.target.disabled = false;
+      }
+
+      function onCloseModal(modal) {
+        modal.classList.add("hidden");
+        if (hb) {
+          hb.ping();
+        }
+      }
+
+      function addDOMHandlers() {
+        const modals = document.getElementsByClassName("modal");
+        const upgradeBtns = document.getElementsByClassName("upgradeBtn");
+        const cancelBtns = document.getElementsByClassName("cancelBtn");
+
+        restartBtn.addEventListener("click", useHyperbeam);
+
+        for (const upgradeBtn of upgradeBtns) {
+          upgradeBtn.addEventListener("click", onUpgrade);
+        }
+
+        for (const cancelBtn of cancelBtns) {
+          cancelBtn.addEventListener("click", onCancel);
+        }
+
+        for (const modal of modals) {
+          const close = modal.getElementsByClassName("close")[0];
+          const buttons = modal.getElementsByTagName("button");
+          for (const closer of [close, ...buttons]) {
+            closer.addEventListener("click", () => {
+              onCloseModal(modal);
+            });
+          }
+        }
+      }
+    </script>
+  </body>
+</html>
