@@ -22,6 +22,8 @@ After running `npm run start`, a server should be listening on port 8080.
 
 Visit http://localhost:8080. You should see the "Hello Extensions" extension pinned on Chrome.
 
+![image](https://user-images.githubusercontent.com/18666879/195963632-03abbb3b-021f-4390-9c0d-e4c9c2fef4e0.png)
+
 ## Modifying the extension
 
 Have you modified the extension code and want to run your modified extension? First, terminate the server by pressing CTRL+C. After that, run the following commands:
