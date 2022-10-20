@@ -3,6 +3,15 @@
   <head>
     <title>Hyperbeam timeout example ⏰</title>
     <style>
+      * {
+        --primary: #464D77;
+        --primary-dark: #3D4453;
+        --primary-darker: #2D3142;
+        --primary-10-percent: rgba(70, 77, 119, 0.1);
+        --primary-20-percent: rgba(70, 77, 119, 0.2);
+        --secondary: #36827F;
+      }
+
       body {
         font-family: Arial, sans-serif;
         margin: 0;
@@ -12,7 +21,7 @@
         border: none;
         border-radius: 4px;
         background: #eee;
-        background-color: #007bff;
+        background-color: var(--primary);
         padding: 8px 16px;
         color: #fff;
         font-size: 1em;
@@ -20,11 +29,11 @@
       }
 
       button:hover {
-        background-color: #0069d9;
+        background-color: var(--primary-dark);
       }
 
       button:active {
-        background-color: #0062cc;
+        background-color: var(--primary-darker);
       }
 
       .modal {
@@ -53,17 +62,17 @@
       }
 
       .modal-content button+button.closeModal {
-        color: #007bff;
+        color: var(--primary);
         background-color: transparent;
-        border: 1px solid #007bff;
+        border: 1px solid var(--primary);
       }
 
       .modal-content button+button.closeModal:hover {
-        background-color: rgba(0, 123, 255, 0.1);
+        background-color: var(--primary-10-percent)
       }
 
       .modal-content button+button.closeModal:active {
-        background-color: rgba(0, 123, 255, 0.2);
+        background-color: var(--primary-20-percent)
       }
 
       .close {
@@ -85,7 +94,7 @@
       }
 
       .managePremium {
-        background-color: #007bff;
+        background-color: var(--primary);
         color: #fff;
         text-align: center;
         padding: 8px 0;
@@ -108,7 +117,7 @@
       }
 
       #restart {
-        background-color: gray;
+        background-color: var(--secondary);
       }
 
       .hidden {
