@@ -3,13 +3,37 @@
   <head>
     <title>Hyperbeam timeout example ⏰</title>
     <style>
+      * {
+        --primary: #464D77;
+        --primary-dark: #3D4453;
+        --primary-darker: #2D3142;
+        --primary-10-percent: rgba(70, 77, 119, 0.1);
+        --primary-20-percent: rgba(70, 77, 119, 0.2);
+        --secondary: #36827F;
+      }
+
       body {
         font-family: Arial, sans-serif;
+        margin: 0;
       }
 
       button {
+        border: none;
+        border-radius: 4px;
+        background: #eee;
+        background-color: var(--primary);
+        padding: 8px 16px;
+        color: #fff;
         font-size: 1em;
-        padding: 4px 6px;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background-color: var(--primary-dark);
+      }
+
+      button:active {
+        background-color: var(--primary-darker);
       }
 
       .modal {
@@ -33,6 +57,24 @@
         border-radius: 8px;
       }
 
+      .modal-content h1 {
+        margin-top: 0;
+      }
+
+      .modal-content button+button.closeModal {
+        color: var(--primary);
+        background-color: transparent;
+        border: 1px solid var(--primary);
+      }
+
+      .modal-content button+button.closeModal:hover {
+        background-color: var(--primary-10-percent)
+      }
+
+      .modal-content button+button.closeModal:active {
+        background-color: var(--primary-20-percent)
+      }
+
       .close {
         color: #aaa;
         float: right;
@@ -52,11 +94,43 @@
       }
 
       .managePremium {
-        margin-bottom: 5px;
+        background-color: var(--primary);
+        color: #fff;
+        text-align: center;
+        padding: 8px 0;
+      }
+      
+      .managePremium button {
+        border: 1px solid #fff;
+        background-color: transparent;
+        color: #fff;
+        margin: 0 8px;
+        padding: 4px 8px;
+      }
+
+      .managePremium button:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+      }
+
+      .managePremium button:active {
+        background-color: rgba(255, 255, 255, 0.2);
+      }
+
+      #restart {
+        background-color: var(--secondary);
       }
 
       .hidden {
         display: none;
+      }
+
+      #hbContainer {
+        height: calc(100vh - 45px); /* 45px is the height of the banner */
+        width: auto;
+      }
+
+      #restart:not(.hidden) ~ #hbContainer {
+        height: calc(100vh - 90px); /* 90px is the height of two banners */
       }
     </style>
   </head>
@@ -65,7 +139,7 @@
       Tired of timeouts? <button class="upgradeBtn">Upgrade</button>
     </div>
     <div class="managePremium hidden" id="cancel">
-      Manage your premium: <button class="cancelBtn">Cancel</button>
+      Upgraded to premium <button class="cancelBtn">Cancel</button>
     </div>
     <div class="managePremium hidden" id="restart">
       <span id="closeReason"></span><button id="restartBtn">Restart</button>
@@ -76,8 +150,8 @@
         <h1>Level up your experience</h1>
         <p>Your free co-browser will time out in <span class="timeout"></span>.</p>
         <p>Tired of timeouts? Subscribe to get unlimited co-browsing.</p>
-        <button class="closeModal">Maybe later</button>
         <button class="upgradeBtn">Upgrade</button>
+        <button class="closeModal">Maybe later</button>
       </div>
     </div>
     <div id="inactiveTimeoutModal" class="modal hidden">
@@ -88,7 +162,7 @@
         <button class="closeModal">I'm still here!</button>
       </div>
     </div>
-    <div id="hbContainer" style="height:720px;width:1280px"></div>
+    <div id="hbContainer"></div>
     <script type="module">
       import Hyperbeam from "https://unpkg.com/@hyperbeam/web@latest/dist/index.js";
 
