@@ -90,7 +90,6 @@
         text-align: center;
         padding: 8px 0;
       }
-
       
       .managePremium button {
         border: 1px solid #fff;
@@ -114,6 +113,15 @@
 
       .hidden {
         display: none;
+      }
+
+      #hbContainer {
+        height: calc(100vh - 45px); /* 45px is the height of the banner */
+        width: auto;
+      }
+
+      #restart:not(.hidden) ~ #hbContainer {
+        height: calc(100vh - 90px); /* 90px is the height of two banners */
       }
     </style>
   </head>
@@ -145,7 +153,7 @@
         <button class="closeModal">I'm still here!</button>
       </div>
     </div>
-    <div id="hbContainer" style="height:720px;width:1280px"></div>
+    <div id="hbContainer"></div>
     <script type="module">
       import Hyperbeam from "https://unpkg.com/@hyperbeam/web@latest/dist/index.js";
 
