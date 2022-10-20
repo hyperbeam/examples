@@ -47,6 +47,24 @@
         border-radius: 8px;
       }
 
+      .modal-content h1 {
+        margin-top: 0;
+      }
+
+      .modal-content button+button.closeModal {
+        color: #007bff;
+        background-color: transparent;
+        border: 1px solid #007bff;
+      }
+
+      .modal-content button+button.closeModal:hover {
+        background-color: rgba(0, 123, 255, 0.1);
+      }
+
+      .modal-content button+button.closeModal:active {
+        background-color: rgba(0, 123, 255, 0.2);
+      }
+
       .close {
         color: #aaa;
         float: right;
@@ -90,8 +108,8 @@
         <h1>Level up your experience</h1>
         <p>Your free co-browser will time out in <span class="timeout"></span>.</p>
         <p>Tired of timeouts? Subscribe to get unlimited co-browsing.</p>
-        <button class="closeModal">Maybe later</button>
         <button class="upgradeBtn">Upgrade</button>
+        <button class="closeModal">Maybe later</button>
       </div>
     </div>
     <div id="inactiveTimeoutModal" class="modal hidden">
