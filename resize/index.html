@@ -2,26 +2,56 @@
 <html>
   <head>
     <style>
+      body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        background-image: linear-gradient(rgba(0, 127, 239, .3) .1em, transparent .1em), linear-gradient(90deg, rgba(0, 127, 239, .3) .1em, transparent .1em);
+        background-size: 6em 6em;
+      }
       .resize-drag {
         width: 1280px;
-        height: 720px;
-        padding: 20px;
         margin: 1rem;
-        background-color: #29e;
-        color: white;
         font-size: 20px;
         font-family: sans-serif;
-
-        touch-action: none;
+        background-color: rgb(0, 127, 239);
 
         /* This makes things *much* easier */
         box-sizing: border-box;
       }
+      .bar {
+        background-color: rgb(0, 127, 239);
+        height: 36px;
+        width: 100%;
+      }
+      .hidden {
+        display: none;
+      }
+      .lock {
+        border: none;
+        background: none;
+        cursor: pointer;
+        width: 100%;
+        margin: 4px auto;
+      }
+      .lock path {
+        fill: #fff;
+      }
     </style>
   </head>
   <body>
-    <button id="lock">Unlock</button>
-    <div id="cloudComputerDiv" class="resize-drag">Resize from any edge or corner</div>
+    <div class="resize-drag">
+      <div id="cloudComputerDiv"></div>
+      <div class="bar">
+        <button id="unlock" class="lock">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M12,17A2,2 0 0,0 14,15C14,13.89 13.1,13 12,13A2,2 0 0,0 10,15A2,2 0 0,0 12,17M18,8A2,2 0 0,1 20,10V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V10C4,8.89 4.9,8 6,8H7V6A5,5 0 0,1 12,1A5,5 0 0,1 17,6V8H18M12,3A3,3 0 0,0 9,6V8H15V6A3,3 0 0,0 12,3Z" /></svg>
+        </button>
+        <button id="lock" class="lock hidden">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M18,8A2,2 0 0,1 20,10V20A2,2 0 0,1 18,22H6C4.89,22 4,21.1 4,20V10A2,2 0 0,1 6,8H15V6A3,3 0 0,0 12,3A3,3 0 0,0 9,6H7A5,5 0 0,1 12,1A5,5 0 0,1 17,6V8H18M12,17A2,2 0 0,0 14,15A2,2 0 0,0 12,13A2,2 0 0,0 10,15A2,2 0 0,0 12,17Z" /></svg>
+
+        </button>
+      </div>
+    </div>
     <script src="https://unpkg.com/interactjs/dist/interact.min.js"></script>
     <script type="module">
       import Hyperbeam from 'https://unpkg.com/@hyperbeam/web@latest/dist/index.js'
@@ -36,31 +66,27 @@
         target.setAttribute('data-y', y);
       }
 
-      function toggleInteractives() {
-        if (lock.innerText === 'Lock') {
-          lock.innerText = 'Unlock'
-          interact('.resize-drag').unset()
-          return
-        }
-        lock.innerText = 'Lock'
+      function enableInteractives() {
+        lock.classList.remove("hidden");
+        unlock.classList.add("hidden");
         interact('.resize-drag')
           .resizable({
             edges: { left: true, right: true, bottom: true, top: true },
             listeners: {
               move (event) {
-                const target = event.target
-                let x = (parseFloat(target.getAttribute('data-x')) || 0)
-                let y = (parseFloat(target.getAttribute('data-y')) || 0)
+                const target = event.target;
+                let x = (parseFloat(target.getAttribute('data-x')) || 0);
+                let y = (parseFloat(target.getAttribute('data-y')) || 0);
 
-                target.style.width = event.rect.width + 'px'
-                target.style.height = event.rect.height + 'px'
+                target.style.width = event.rect.width + 'px';
+                target.style.height = event.rect.height + 'px';
 
-                x += event.deltaRect.left
-                y += event.deltaRect.top
+                x += event.deltaRect.left;
+                y += event.deltaRect.top;
 
-                target.style.transform = 'translate(' + x + 'px,' + y + 'px)'
-                target.setAttribute('data-x', x)
-                target.setAttribute('data-y', y)
+                target.style.transform = `translate(${x}px, ${y}px)`;
+                target.setAttribute('data-x', x);
+                target.setAttribute('data-y', y);
               }
             },
             modifiers: [
@@ -76,11 +102,18 @@
           });
       }
 
-      lock.addEventListener('click', toggleInteractives)
-      const resp = await fetch('/computer')
-      const data = await resp.json()
-      const hb = await Hyperbeam(cloudComputerDiv, data.embed_url)
-      toggleInteractives()
+      function disableInteractives() {
+        lock.classList.add("hidden");
+        unlock.classList.remove("hidden");
+        interact('.resize-drag').unset();
+      }
+
+      lock.addEventListener('click', disableInteractives);
+      unlock.addEventListener('click', enableInteractives);
+      const resp = await fetch('/computer');
+      const data = await resp.json();
+      const hb = await Hyperbeam(cloudComputerDiv, data.embed_url);
+      enableInteractives();
     </script>
     </div>
   </body>
