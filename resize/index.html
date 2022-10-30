@@ -10,28 +10,34 @@
         background-size: 6em 6em;
       }
       .resize-drag {
-        width: 1280px;
         margin: 1rem;
         font-size: 20px;
         font-family: sans-serif;
         background-color: rgb(0, 127, 239);
-
-        /* This makes things *much* easier */
+        display: inline-block;
         box-sizing: border-box;
+        position: relative;
+      }
+      #cloudComputerDiv {
+        width: 100%;
+        height: 100%;
       }
       .bar {
+        position: absolute;
+        top: 100%;
         background-color: rgb(0, 127, 239);
         height: 36px;
         width: 100%;
+        text-align: center;
       }
-      .hidden {
+      .lock.hidden {
         display: none;
       }
       .lock {
         border: none;
         background: none;
         cursor: pointer;
-        width: 100%;
+        display: inline-block;
         margin: 4px auto;
       }
       .lock path {
@@ -66,7 +72,7 @@
         target.setAttribute('data-y', y);
       }
 
-      function enableInteractives() {
+      function enableInteractives(hb) {
         lock.classList.remove("hidden");
         unlock.classList.add("hidden");
         interact('.resize-drag')
@@ -78,8 +84,11 @@
                 let x = (parseFloat(target.getAttribute('data-x')) || 0);
                 let y = (parseFloat(target.getAttribute('data-y')) || 0);
 
-                target.style.width = event.rect.width + 'px';
-                target.style.height = event.rect.height + 'px';
+                let width = Math.floor(event.rect.width)
+                let height = Math.floor(event.rect.height)
+                if (width * height <= hb.initialWidth * hb.initialHeight) {
+                  hb.resize(width, height)
+                }
 
                 x += event.deltaRect.left;
                 y += event.deltaRect.top;
@@ -108,12 +117,12 @@
         interact('.resize-drag').unset();
       }
 
-      lock.addEventListener('click', disableInteractives);
-      unlock.addEventListener('click', enableInteractives);
       const resp = await fetch('/computer');
       const data = await resp.json();
       const hb = await Hyperbeam(cloudComputerDiv, data.embed_url);
-      enableInteractives();
+      lock.addEventListener('click', disableInteractives);
+      unlock.addEventListener('click', () => enableInteractives(hb));
+      enableInteractives(hb);
     </script>
     </div>
   </body>
