@@ -1,17 +1,14 @@
-import path from 'path';
-import express from 'express';
-import axios from 'axios';
-import cors from 'cors';
+const path = require('path');
+const express = require('express');
+const axios = require('axios');
+const app = express();
 
-const corsOptions = {
-  origin: 'http://localhost:3000',
-  optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
-};
-const app = express()
-app.use(cors(corsOptions));
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '/index.html'));
+});
 
 // Get a cloud computer object. If no object exists, create it.
-let computer
+let computer;
 app.get('/computer', async (req, res) => {
   if (computer) {
     res.send(computer);

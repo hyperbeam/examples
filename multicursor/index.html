@@ -23,6 +23,46 @@
   </head>
   <body>
     <div id="hb-computer-container"></div>
-    <script type="module" src="/main.js"></script>
+    <script type="module">
+      import Hyperbeam from 'http://localhost:8080/api/dist/index.js'
+
+      const resp = await fetch('http://localhost:8081/computer');
+      const data = await resp.json();
+
+      const container = document.getElementById('hb-computer-container');
+      const rect = container.getBoundingClientRect();
+      const cursors = new Map();
+
+      function newCursor(userId) {
+        const elm = document.createElement('div');
+        elm.classList.add('cursor');
+        document.body.appendChild(elm);
+        const onTimeout = () => {
+          elm.remove();
+          cursors.delete(userId);
+        };
+        let timeout = setTimeout(onTimeout, 5000);
+        const update = (p) => {
+          elm.style.setProperty('transform', `translate(${p[0]}px, ${p[1]}px)`);
+          clearTimeout(timeout);
+          timeout = setTimeout(onTimeout, 5000);
+        };
+        cursors.set(userId, update);
+      }
+
+      const hb = await Hyperbeam(container, data.embed_url, {
+        onCursor({ x, y, userId }) {
+          if (!cursors.has(userId)) {
+            newCursor(userId);
+          }
+          const updateCursor = cursors.get(userId);
+          const position = [
+            container.offsetWidth * x + rect.left,
+            container.offsetHeight * y + rect.top,
+          ];
+          updateCursor(position);
+        }
+      });
+    </script>
   </body>
 </html>
