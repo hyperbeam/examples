@@ -14,7 +14,12 @@ app.get('/computer', async (req, res) => {
     res.send(computer);
     return;
   }
-  const resp = await axios.post('http://localhost:8084/v0/vm', {hide_cursor: true}, {
+  const roles = ["control", "clipboard_copy", "programmatic_navigation", "cursor_data"]
+  const computerConfig = {
+    hide_cursor: true,
+    default_roles: roles
+  }
+  const resp = await axios.post('http://localhost:8084/v0/vm', computerConfig, {
     headers: { 'Authorization': `Bearer zxY142PgZZmEjUwKr7WcfsqtzF26UtUPG_kaHlhTbNY` }
   });
   computer = resp.data;
