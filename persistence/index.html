@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hyperbeam Persistence Example</title>
+    <style>
+      .box {
+        width: 100px;
+        height: 100px;
+        border: 1px solid #000;
+        display: inline-block;
+        margin: 10px;
+        vertical-align: top;
+        cursor: pointer;
+      }
+      .hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="menu" class="hidden">
+      <div id="new-computer" class="box"><p>Create new</p></div>
+    </div>
+    <div id="computer-page" class="hidden">
+      <button id="exit-btn">Save and exit</button>
+      <div id="hb-computer-container"></div>
+    </div>
+    <script type="module">
+      import Hyperbeam from "https://unpkg.com/@hyperbeam/web@latest/dist/index.js";
+
+      loadProfiles();
+      handleRoute();
+      let hyperbeam;
+      let activeSessionId;
+      let profileId;
+      const newBtn = document.getElementById('new-computer');
+      const computerPage = document.getElementById('computer-page');
+      const exitBtn = document.getElementById('exit-btn');
+      const container = document.getElementById('hb-computer-container');
+      newBtn.addEventListener('click', () => loadComputer());
+      exitBtn.addEventListener('click', () => exitComputer(hyperbeam));
+
+      async function loadProfiles() {
+        const resp = await fetch('/sessions')
+        const sessions = await resp.json()
+        for (const node of document.querySelectorAll('.box-item')) {
+          node.remove()
+        }
+        for (const session of sessions) {
+          const div = document.createElement('div')
+          div.classList.add('box', 'box-item')
+          menu.appendChild(div)
+          for (const tab of session.sites) {
+            const img = document.createElement('img')
+            img.src = tab.favIconUrl
+            div.appendChild(img)
+          }
+          div.addEventListener('click', () => loadComputer(session.session_id))
+        }
+      }
+
+      function handleRoute() {
+        switch (window.location.pathname) {
+          case '/':
+            menu.classList.remove('hidden');
+            break;
+          case '/profile':
+            const search = new URLSearchParams(window.location.search)
+            loadComputer(search.get('session_id'));
+            break;
+          default:
+            window.location.replace('/');
+        }
+      }
+
+      async function updateSession(sessionId) {
+        const tabs = await hyperbeam.tabs.query({})
+        return fetch('/sites', {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            session_id: sessionId,
+            sites: tabs
+          })
+        })
+      }
+
+      function debounce(func, timeout = 300){
+        let timer;
+        return (...args) => {
+          clearTimeout(timer);
+          timer = setTimeout(() => { func.apply(this, args); }, timeout);
+        };
+      }
+
+      async function loadComputer(sessionId) {
+        menu.classList.add('hidden');
+        computerPage.classList.remove('hidden');
+        let url = '/computer'
+        if (sessionId) {
+          url += `?session_id=${sessionId}`
+        }
+        const resp = await fetch(url);
+        const data = await resp.json();
+        activeSessionId = data.session_id
+        profileId = sessionId || activeSessionId
+        hyperbeam = await Hyperbeam(container, data.embed_url)
+
+        let debounce
+        hyperbeam.tabs.onUpdated.addListener(() => {
+          clearTimeout(debounce)
+          debounce = setTimeout(() => updateSession(profileId), 2000)
+        })
+
+        window.history.pushState('', '', `/profile?session_id=${sessionId || data.session_id}`);
+      }
+
+      async function exitComputer(hb) {
+        const promises = []
+        exitBtn.disabled = true
+        await updateSession(profileId)
+        try {
+          await Promise.all([
+            loadProfiles(),
+            fetch(`/computer/stop?session_id=${activeSessionId}`, {method: 'POST'}),
+          ])
+          if (hb) {
+            hb.destroy()
+          }
+        } catch (e) {
+          console.error(e)
+        } finally {
+          exitBtn.disabled = false
+        }
+        menu.classList.remove('hidden')
+        computerPage.classList.add('hidden')
+        window.history.pushState('', '', '/')
+      }
+    </script>
+  </body>
+</html>
