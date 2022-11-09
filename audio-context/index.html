@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Hyperbeam AudioContext example</title>
+  </head>
+  <body>
+    <div>
+    <div style="font-family: sans-serif">
+      Volume: <input type="range" id="volumeSlider" min="0" max="2" value="1" step="0.01" />
+      Reverb: <input type="checkbox" id="reverbToggle" />
+    </div>
+    <div id="cloudComputerDiv" style="height:720px;width:1280px"></div>
+    </div>
+    <script type="module">
+      import Hyperbeam from 'https://unpkg.com/@hyperbeam/web@latest/dist/index.js';
+      const audioCtx = new AudioContext();
+      const gainNode = audioCtx.createGain();
+      const reverbNode = reverb(audioCtx, 0.3, 1);
+      const resp = await fetch('/computer');
+      const data = await resp.json();
+      const hb = await Hyperbeam(cloudComputerDiv, data.embed_url, {
+        audioTrackCb: tryAudio
+      });
+
+      function tryAudio(track) {
+        // audioCtx.createMediaStreamTrackSource(track) is only supported by Firefox
+        const stream = new MediaStream([track]);
+        const source = audioCtx.createMediaStreamSource(stream);
+        source.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+      }
+
+      function enableReverb() {
+        gainNode.disconnect();
+        gainNode.connect(reverbNode);
+        reverbNode.connect(audioCtx.destination);
+      }
+
+      function disableReverb() {
+        gainNode.disconnect();
+        gainNode.connect(audioCtx.destination);
+      }
+
+      volumeSlider.addEventListener('input', (e) => {
+        gainNode.gain.value = e.target.value;
+      });
+
+      reverbToggle.addEventListener('change', (e) => {
+        if (e.target.checked) {
+          enableReverb();
+        } else {
+          disableReverb();
+        }
+      })
+
+      window.addEventListener('mouseup', async () => {
+        // AudioContext will start in a suspended state if no user gestures
+        // have been received on the page: need to check if suspended and resume
+        if (audioCtx.state === 'suspended') {
+          await audioCtx.resume();
+        }
+      })
+
+      // Inspired by https://github.com/web-audio-components/simple-reverb/blob/master/index.js
+      function reverb(ctx, seconds, decay, reverse = false) {
+        const rate = ctx.sampleRate;
+        const length = rate * seconds;
+        const impulse = ctx.createBuffer(2, length, rate);
+        const impulseL = impulse.getChannelData(0);
+        const impulseR = impulse.getChannelData(1);
+        for (let i = 0; i < length; i++) {
+          const n = reverse ? length - i : i;
+          impulseL[i] = (Math.random() * 2 - 1) * Math.pow(1 - n / length, decay);
+          impulseR[i] = (Math.random() * 2 - 1) * Math.pow(1 - n / length, decay);
+        }
+        const reverbNode = ctx.createConvolver();
+        reverbNode.buffer = impulse;
+        return reverbNode;
+      }
+    </script>
+    </div>
+  </body>
+</html>
