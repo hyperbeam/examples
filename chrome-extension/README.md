@@ -29,7 +29,7 @@ Visit http://localhost:8080. You should see the "Hello Extensions" extension pin
 Have you modified the extension code and want to run your modified extension? First, terminate the server by pressing CTRL+C. After that, run the following commands:
 
 ```bash
-npm run build 
+npm run build
 npm run start
 ```
 

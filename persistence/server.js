@@ -1,4 +1,4 @@
-const path = require("path")
+const path = require("path");
 const { Level } = require("level");
 const express = require("express");
 const axios = require("axios");
@@ -9,7 +9,7 @@ const db = new Level("data", { valueEncoding: "json" });
 app.use(express.json());
 
 app.get("/sessions", async (req, res) => {
-  const sessions = []
+  const sessions = [];
   for await (const session of db.values()) {
     sessions.push(session);
   }
@@ -17,7 +17,7 @@ app.get("/sessions", async (req, res) => {
 });
 
 app.post("/sites", async (req, res) => {
-  const {session_id, sites} = req.body;
+  const { session_id, sites } = req.body;
   try {
     await db.get(session_id);
   } catch (e) {
@@ -26,29 +26,32 @@ app.post("/sites", async (req, res) => {
   }
   await db.put(session_id, {
     session_id,
-    sites
+    sites,
   });
   res.sendStatus(200);
 });
 
 app.post("/computer/stop", async (req, res) => {
-  let {session_id} = req.query;
+  let { session_id } = req.query;
   const headers = {
-    Authorization: `Bearer ${process.env.HB_API_KEY}`
+    Authorization: `Bearer ${process.env.HB_API_KEY}`,
   };
   try {
-    resp = await axios.delete(`https://engine.hyperbeam.com/v0/vm/${session_id}`, {headers});
+    resp = await axios.delete(
+      `https://engine.hyperbeam.com/v0/vm/${session_id}`,
+      { headers }
+    );
   } catch (e) {
-    console.error(e)
-    res.status(501)
-    res.send({ message: e.message })
-    return
+    console.error(e);
+    res.status(501);
+    res.send({ message: e.message });
+    return;
   }
-  res.sendStatus(200)
-})
+  res.sendStatus(200);
+});
 
 app.get("/computer", async (req, res) => {
-  let {session_id} = req.query;
+  let { session_id } = req.query;
   let load;
   let save = true;
   if (session_id) {
@@ -60,33 +63,35 @@ app.get("/computer", async (req, res) => {
       res.status(400);
       return;
     }
-  };
+  }
   const settings = {
     profile: {
       load,
-      save
+      save,
     },
     timeout: {
-      offline: 10
-    }
+      offline: 10,
+    },
   };
   const headers = {
-    Authorization: `Bearer ${process.env.HB_API_KEY}`
+    Authorization: `Bearer ${process.env.HB_API_KEY}`,
   };
-  let resp
+  let resp;
   try {
-    resp = await axios.post("https://engine.hyperbeam.com/v0/vm", settings, {headers});
+    resp = await axios.post("https://engine.hyperbeam.com/v0/vm", settings, {
+      headers,
+    });
   } catch (e) {
-    console.error(e)
-    res.status(501)
-    res.send({ message: e.message })
-    return
+    console.error(e);
+    res.status(501);
+    res.send({ message: e.message });
+    return;
   }
   const computer = resp.data;
   session_id = session_id || computer.session_id;
   await db.put(session_id, {
     session_id,
-    sites: []
+    sites: [],
   });
   res.send(computer);
 });

@@ -36,110 +36,118 @@
       let hyperbeam;
       let activeSessionId;
       let profileId;
-      const newBtn = document.getElementById('new-computer');
-      const computerPage = document.getElementById('computer-page');
-      const exitBtn = document.getElementById('exit-btn');
-      const container = document.getElementById('hb-computer-container');
-      newBtn.addEventListener('click', () => loadComputer());
-      exitBtn.addEventListener('click', () => exitComputer(hyperbeam));
+      const newBtn = document.getElementById("new-computer");
+      const computerPage = document.getElementById("computer-page");
+      const exitBtn = document.getElementById("exit-btn");
+      const container = document.getElementById("hb-computer-container");
+      newBtn.addEventListener("click", () => loadComputer());
+      exitBtn.addEventListener("click", () => exitComputer(hyperbeam));
 
       async function loadProfiles() {
-        const resp = await fetch('/sessions')
-        const sessions = await resp.json()
-        for (const node of document.querySelectorAll('.box-item')) {
-          node.remove()
+        const resp = await fetch("/sessions");
+        const sessions = await resp.json();
+        for (const node of document.querySelectorAll(".box-item")) {
+          node.remove();
         }
         for (const session of sessions) {
-          const div = document.createElement('div')
-          div.classList.add('box', 'box-item')
-          menu.appendChild(div)
+          const div = document.createElement("div");
+          div.classList.add("box", "box-item");
+          menu.appendChild(div);
           for (const tab of session.sites) {
-            const img = document.createElement('img')
-            img.src = tab.favIconUrl
-            div.appendChild(img)
+            const img = document.createElement("img");
+            img.src = tab.favIconUrl;
+            div.appendChild(img);
           }
-          div.addEventListener('click', () => loadComputer(session.session_id))
+          div.addEventListener("click", () => loadComputer(session.session_id));
         }
       }
 
       function handleRoute() {
         switch (window.location.pathname) {
-          case '/':
-            menu.classList.remove('hidden');
+          case "/":
+            menu.classList.remove("hidden");
             break;
-          case '/profile':
-            const search = new URLSearchParams(window.location.search)
-            loadComputer(search.get('session_id'));
+          case "/profile":
+            const search = new URLSearchParams(window.location.search);
+            loadComputer(search.get("session_id"));
             break;
           default:
-            window.location.replace('/');
+            window.location.replace("/");
         }
       }
 
       async function updateSession(sessionId) {
-        const tabs = await hyperbeam.tabs.query({})
-        return fetch('/sites', {
+        const tabs = await hyperbeam.tabs.query({});
+        return fetch("/sites", {
           method: "POST",
           headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             session_id: sessionId,
-            sites: tabs
-          })
-        })
+            sites: tabs,
+          }),
+        });
       }
 
-      function debounce(func, timeout = 300){
+      function debounce(func, timeout = 300) {
         let timer;
         return (...args) => {
           clearTimeout(timer);
-          timer = setTimeout(() => { func.apply(this, args); }, timeout);
+          timer = setTimeout(() => {
+            func.apply(this, args);
+          }, timeout);
         };
       }
 
       async function loadComputer(sessionId) {
-        menu.classList.add('hidden');
-        computerPage.classList.remove('hidden');
-        let url = '/computer'
+        menu.classList.add("hidden");
+        computerPage.classList.remove("hidden");
+        let url = "/computer";
         if (sessionId) {
-          url += `?session_id=${sessionId}`
+          url += `?session_id=${sessionId}`;
         }
         const resp = await fetch(url);
         const data = await resp.json();
-        activeSessionId = data.session_id
-        profileId = sessionId || activeSessionId
-        hyperbeam = await Hyperbeam(container, data.embed_url)
+        activeSessionId = data.session_id;
+        profileId = sessionId || activeSessionId;
+        hyperbeam = await Hyperbeam(container, data.embed_url);
 
-        let debounce
+        let debounce;
         hyperbeam.tabs.onUpdated.addListener(() => {
-          clearTimeout(debounce)
-          debounce = setTimeout(() => updateSession(profileId), 2000)
-        })
+          clearTimeout(debounce);
+          debounce = setTimeout(() => updateSession(profileId), 2000);
+        });
 
-        window.history.pushState('', '', `/profile?session_id=${sessionId || data.session_id}`);
+        window.history.pushState(
+          "",
+          "",
+          `/profile?session_id=${sessionId || data.session_id}`
+        );
       }
 
       async function exitComputer(hb) {
-        const promises = []
-        exitBtn.disabled = true
-        await updateSession(profileId)
+        const promises = [];
+        exitBtn.disabled = true;
+        await updateSession(profileId);
         try {
           await Promise.all([
             loadProfiles(),
-            fetch(`/computer/stop?session_id=${activeSessionId}`, {method: 'POST'}),
-          ])
+            fetch(`/computer/stop?session_id=${activeSessionId}`, {
+              method: "POST",
+            }),
+          ]);
           if (hb) {
-            hb.destroy()
+            hb.destroy();
           }
         } catch (e) {
-          console.error(e)
+          console.error(e);
         } finally {
-          exitBtn.disabled = false
+          exitBtn.disabled = false;
         }
-        menu.classList.remove('hidden')
-        computerPage.classList.add('hidden')
-        window.history.pushState('', '', '/')
+        menu.classList.remove("hidden");
+        computerPage.classList.add("hidden");
+        window.history.pushState("", "", "/");
       }
     </script>
   </body>

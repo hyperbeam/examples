@@ -6,7 +6,15 @@
         margin: 0;
         padding: 0;
         width: 100%;
-        background-image: linear-gradient(rgba(0, 127, 239, .3) .1em, transparent .1em), linear-gradient(90deg, rgba(0, 127, 239, .3) .1em, transparent .1em);
+        background-image: linear-gradient(
+            rgba(0, 127, 239, 0.3) 0.1em,
+            transparent 0.1em
+          ),
+          linear-gradient(
+            90deg,
+            rgba(0, 127, 239, 0.3) 0.1em,
+            transparent 0.1em
+          );
         background-size: 6em 6em;
       }
       .resize-drag {
@@ -14,7 +22,7 @@
         font-size: 20px;
         font-family: sans-serif;
         background-color: rgb(0, 127, 239, 0.2);
-        border: 2px solid  rgb(0, 127, 239, 0.2);
+        border: 2px solid rgb(0, 127, 239, 0.2);
         display: inline-block;
         box-sizing: border-box;
         position: relative;
@@ -58,43 +66,60 @@
       <div id="cloudComputerDiv"></div>
       <div class="bar">
         <button id="unlock" class="lock">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M12,17A2,2 0 0,0 14,15C14,13.89 13.1,13 12,13A2,2 0 0,0 10,15A2,2 0 0,0 12,17M18,8A2,2 0 0,1 20,10V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V10C4,8.89 4.9,8 6,8H7V6A5,5 0 0,1 12,1A5,5 0 0,1 17,6V8H18M12,3A3,3 0 0,0 9,6V8H15V6A3,3 0 0,0 12,3Z" /></svg>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M12,17A2,2 0 0,0 14,15C14,13.89 13.1,13 12,13A2,2 0 0,0 10,15A2,2 0 0,0 12,17M18,8A2,2 0 0,1 20,10V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V10C4,8.89 4.9,8 6,8H7V6A5,5 0 0,1 12,1A5,5 0 0,1 17,6V8H18M12,3A3,3 0 0,0 9,6V8H15V6A3,3 0 0,0 12,3Z"
+            />
+          </svg>
         </button>
         <button id="lock" class="lock hidden">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M18,8A2,2 0 0,1 20,10V20A2,2 0 0,1 18,22H6C4.89,22 4,21.1 4,20V10A2,2 0 0,1 6,8H15V6A3,3 0 0,0 12,3A3,3 0 0,0 9,6H7A5,5 0 0,1 12,1A5,5 0 0,1 17,6V8H18M12,17A2,2 0 0,0 14,15A2,2 0 0,0 12,13A2,2 0 0,0 10,15A2,2 0 0,0 12,17Z" /></svg>
-
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M18,8A2,2 0 0,1 20,10V20A2,2 0 0,1 18,22H6C4.89,22 4,21.1 4,20V10A2,2 0 0,1 6,8H15V6A3,3 0 0,0 12,3A3,3 0 0,0 9,6H7A5,5 0 0,1 12,1A5,5 0 0,1 17,6V8H18M12,17A2,2 0 0,0 14,15A2,2 0 0,0 12,13A2,2 0 0,0 10,15A2,2 0 0,0 12,17Z"
+            />
+          </svg>
         </button>
       </div>
     </div>
     <script src="https://unpkg.com/interactjs/dist/interact.min.js"></script>
     <script type="module">
-      import Hyperbeam from 'https://unpkg.com/@hyperbeam/web@latest/dist/index.js'
+      import Hyperbeam from "https://unpkg.com/@hyperbeam/web@latest/dist/index.js";
 
       function dragMoveListener(event) {
         const target = event.target;
-        const x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
-        const y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
+        const x = (parseFloat(target.getAttribute("data-x")) || 0) + event.dx;
+        const y = (parseFloat(target.getAttribute("data-y")) || 0) + event.dy;
 
         target.style.transform = `translate(${x}px, ${y}px)`;
-        target.setAttribute('data-x', x);
-        target.setAttribute('data-y', y);
-        localStorage.setItem('x', x.toString());
-        localStorage.setItem('y', y.toString());
+        target.setAttribute("data-x", x);
+        target.setAttribute("data-y", y);
+        localStorage.setItem("x", x.toString());
+        localStorage.setItem("y", y.toString());
       }
 
       function enableInteractives(hb) {
-        lock.classList.remove('hidden');
-        unlock.classList.add('hidden');
-        interact('.resize-drag')
+        lock.classList.remove("hidden");
+        unlock.classList.add("hidden");
+        interact(".resize-drag")
           .resizable({
             edges: { left: true, right: true, bottom: true, top: true },
             listeners: {
-              move (event) {
+              move(event) {
                 const target = event.target;
                 const width = Math.floor(event.rect.width);
                 const height = Math.floor(event.rect.height);
-                let x = (parseFloat(target.getAttribute('data-x')) || 0);
-                let y = (parseFloat(target.getAttribute('data-y')) || 0);
+                let x = parseFloat(target.getAttribute("data-x")) || 0;
+                let y = parseFloat(target.getAttribute("data-y")) || 0;
 
                 x += event.deltaRect.left;
                 y += event.deltaRect.top;
@@ -102,32 +127,35 @@
                 target.style.width = `${width}px`;
                 target.style.height = `${height}px`;
                 target.style.transform = `translate(${x}px, ${y}px)`;
-                target.setAttribute('data-x', x);
-                target.setAttribute('data-y', y);
-                localStorage.setItem('x', x.toString());
-                localStorage.setItem('y', y.toString());
+                target.setAttribute("data-x", x);
+                target.setAttribute("data-y", y);
+                localStorage.setItem("x", x.toString());
+                localStorage.setItem("y", y.toString());
               },
-              end (event) {
+              end(event) {
                 const target = event.target;
                 const desiredWidth = event.rect.width;
                 const desiredHeight = event.rect.height;
-                const pixels = Math.min(desiredWidth * desiredHeight, hb.initialWidth * hb.initialHeight);
+                const pixels = Math.min(
+                  desiredWidth * desiredHeight,
+                  hb.initialWidth * hb.initialHeight
+                );
                 const aspectRatio = desiredWidth / desiredHeight;
                 const height = Math.floor(Math.sqrt(pixels / aspectRatio));
                 const width = Math.floor(height * aspectRatio);
                 hb.resize(width, height);
-                localStorage.setItem('width', width.toString());
-                localStorage.setItem('height', height.toString());
-                target.style.width = 'initial';
-                target.style.height = 'initial';
-              }
+                localStorage.setItem("width", width.toString());
+                localStorage.setItem("height", height.toString());
+                target.style.width = "initial";
+                target.style.height = "initial";
+              },
             },
             modifiers: [
               interact.modifiers.restrictSize({
-                min: { width: 100, height: 50 }
-              })
+                min: { width: 100, height: 50 },
+              }),
             ],
-            inertia: true
+            inertia: true,
           })
           .draggable({
             listeners: { move: dragMoveListener },
@@ -136,39 +164,38 @@
       }
 
       function disableInteractives() {
-        lock.classList.add('hidden');
-        unlock.classList.remove('hidden');
-        interact('.resize-drag').unset();
+        lock.classList.add("hidden");
+        unlock.classList.remove("hidden");
+        interact(".resize-drag").unset();
       }
 
       const container = cloudComputerDiv.parentElement;
-      const initX = localStorage.getItem('x');
-      const initY = localStorage.getItem('y');
+      const initX = localStorage.getItem("x");
+      const initY = localStorage.getItem("y");
       if (initX && initY) {
         container.style.transform = `translate(${initX}px, ${initY}px)`;
-        container.setAttribute('data-x', ~~initX);
-        container.setAttribute('data-y', ~~initY);
+        container.setAttribute("data-x", ~~initX);
+        container.setAttribute("data-y", ~~initY);
       }
-      const initWidth = localStorage.getItem('width');
-      const initHeight = localStorage.getItem('height');
-      let baseUrl = '/computer';
+      const initWidth = localStorage.getItem("width");
+      const initHeight = localStorage.getItem("height");
+      let baseUrl = "/computer";
       if (initWidth && initHeight) {
         baseUrl += `?width=${initWidth}&height=${initHeight}`;
         container.style.width = `${initWidth}px`;
         container.style.height = `${initHeight}px`;
       } else {
-        container.style.width = '1280px';
-        container.style.height = '720px';
+        container.style.width = "1280px";
+        container.style.height = "720px";
       }
-      container.classList.remove('hidden');
+      container.classList.remove("hidden");
 
       const resp = await fetch(baseUrl);
       const data = await resp.json();
       const hb = await Hyperbeam(cloudComputerDiv, data.embed_url);
-      lock.addEventListener('click', disableInteractives);
-      unlock.addEventListener('click', () => enableInteractives(hb));
+      lock.addEventListener("click", disableInteractives);
+      unlock.addEventListener("click", () => enableInteractives(hb));
       enableInteractives(hb);
     </script>
-    </div>
   </body>
 </html>

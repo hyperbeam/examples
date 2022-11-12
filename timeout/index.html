@@ -4,12 +4,12 @@
     <title>Hyperbeam timeout example ⏰</title>
     <style>
       * {
-        --primary: #464D77;
-        --primary-dark: #3D4453;
-        --primary-darker: #2D3142;
+        --primary: #464d77;
+        --primary-dark: #3d4453;
+        --primary-darker: #2d3142;
         --primary-10-percent: rgba(70, 77, 119, 0.1);
         --primary-20-percent: rgba(70, 77, 119, 0.2);
-        --secondary: #36827F;
+        --secondary: #36827f;
       }
 
       body {
@@ -44,8 +44,8 @@
         width: 100%;
         height: 100%;
         overflow: auto;
-        background-color: rgb(0,0,0);
-        background-color: rgba(0,0,0,0.4);
+        background-color: rgb(0, 0, 0);
+        background-color: rgba(0, 0, 0, 0.4);
       }
 
       .modal-content {
@@ -61,18 +61,18 @@
         margin-top: 0;
       }
 
-      .modal-content button+button.closeModal {
+      .modal-content button + button.closeModal {
         color: var(--primary);
         background-color: transparent;
         border: 1px solid var(--primary);
       }
 
-      .modal-content button+button.closeModal:hover {
-        background-color: var(--primary-10-percent)
+      .modal-content button + button.closeModal:hover {
+        background-color: var(--primary-10-percent);
       }
 
-      .modal-content button+button.closeModal:active {
-        background-color: var(--primary-20-percent)
+      .modal-content button + button.closeModal:active {
+        background-color: var(--primary-20-percent);
       }
 
       .close {
@@ -88,7 +88,7 @@
         text-decoration: none;
         cursor: pointer;
       }
-      
+
       .timeout {
         font-weight: bold;
       }
@@ -99,7 +99,7 @@
         text-align: center;
         padding: 8px 0;
       }
-      
+
       .managePremium button {
         border: 1px solid #fff;
         background-color: transparent;
@@ -148,7 +148,9 @@
       <div class="modal-content">
         <span class="close closeModal">&times;</span>
         <h1>Level up your experience</h1>
-        <p>Your free co-browser will time out in <span class="timeout"></span>.</p>
+        <p>
+          Your free co-browser will time out in <span class="timeout"></span>.
+        </p>
         <p>Tired of timeouts? Subscribe to get unlimited co-browsing.</p>
         <button class="upgradeBtn">Upgrade</button>
         <button class="closeModal">Maybe later</button>
@@ -158,7 +160,10 @@
       <div class="modal-content">
         <span class="close closeModal">&times;</span>
         <h1>Are you still there?</h1>
-        <p>Your session will close in <span class="timeout"></span> due to inactivity.</p>
+        <p>
+          Your session will close in <span class="timeout"></span> due to
+          inactivity.
+        </p>
         <button class="closeModal">I'm still here!</button>
       </div>
     </div>
@@ -172,7 +177,7 @@
 
       async function useHyperbeam() {
         const resp = await fetch("/computer");
-        const {hasPremium, computer} = await resp.json();
+        const { hasPremium, computer } = await resp.json();
         restart.classList.add("hidden");
         setPremium(hasPremium);
         hb = await Hyperbeam(hbContainer, computer.embed_url, {
@@ -187,7 +192,7 @@
             showDisconnect(e.type);
             hb.destroy();
             hb = undefined;
-          }
+          },
         });
       }
 
@@ -262,14 +267,14 @@
 
       async function onUpgrade(e) {
         e.target.disabled = true;
-        await fetch("/upgrade", {method: "POST"});
+        await fetch("/upgrade", { method: "POST" });
         setPremium(true);
         e.target.disabled = false;
       }
 
       async function onCancel(e) {
         e.target.disabled = true;
-        await fetch("/cancel", {method: "POST"});
+        await fetch("/cancel", { method: "POST" });
         setPremium(false);
         e.target.disabled = false;
       }
