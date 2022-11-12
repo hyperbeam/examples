@@ -5,33 +5,41 @@
   </head>
   <body>
     <div>
-    <div style="font-family: sans-serif">
-      Volume: <input type="range" id="volumeSlider" min="0" max="2" value="1" step="0.01" />
-      Reverb: <input type="checkbox" id="reverbToggle" />
-      Noise: <input type="checkbox" id="noiseToggle" />
-    </div>
-    <div id="cloudComputerDiv" style="height:720px;width:1280px"></div>
+      <div style="font-family: sans-serif">
+        Volume:
+        <input
+          type="range"
+          id="volumeSlider"
+          min="0"
+          max="2"
+          value="1"
+          step="0.01"
+        />
+        Reverb: <input type="checkbox" id="reverbToggle" /> Noise:
+        <input type="checkbox" id="noiseToggle" />
+      </div>
+      <div id="cloudComputerDiv" style="height: 720px; width: 1280px"></div>
     </div>
     <script type="module">
-      import Hyperbeam from 'https://unpkg.com/@hyperbeam/web@latest/dist/index.js';
+      import Hyperbeam from "https://unpkg.com/@hyperbeam/web@latest/dist/index.js";
       const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       const gainNode = audioCtx.createGain();
       const noiseNode = brownNoise(audioCtx);
       const reverbNode = reverb(audioCtx, 2, 4);
-      const resp = await fetch('/computer');
+      const resp = await fetch("/computer");
       const data = await resp.json();
       const hb = await Hyperbeam(cloudComputerDiv, data.embed_url, {
-        audioTrackCb: tryAudio
+        audioTrackCb: tryAudio,
       });
 
-      let source
+      let source;
       function tryAudio(track) {
         // audioCtx.createMediaStreamTrackSource(track) is only supported by Firefox
         const stream = new MediaStream([track]);
         source = audioCtx.createMediaStreamSource(stream);
         source.connect(gainNode);
         gainNode.connect(audioCtx.destination);
-        console.log('connected audio track:', track);
+        console.log("connected audio track:", track);
       }
 
       function enableReverb() {
@@ -51,38 +59,38 @@
         noiseNode.disconnect();
       }
 
-      volumeSlider.addEventListener('input', (e) => {
+      volumeSlider.addEventListener("input", (e) => {
         gainNode.gain.value = e.target.value;
       });
 
-      reverbToggle.addEventListener('change', (e) => {
+      reverbToggle.addEventListener("change", (e) => {
         if (e.target.checked) {
           enableReverb();
         } else {
           disableReverb();
         }
-      })
+      });
 
-      noiseToggle.addEventListener('change', (e) => {
+      noiseToggle.addEventListener("change", (e) => {
         if (e.target.checked) {
           enableNoise();
         } else {
           disableNoise();
         }
-      })
+      });
 
-      window.addEventListener('mouseup', async () => {
+      window.addEventListener("mouseup", async () => {
         // AudioContext will start in a suspended state if no user gestures
         // have been received on the page: need to check if suspended and resume
-        if (audioCtx.state === 'suspended') {
+        if (audioCtx.state === "suspended") {
           try {
             await audioCtx.resume();
-            console.log('audioCtx state:', audioCtx.state);
+            console.log("audioCtx state:", audioCtx.state);
           } catch (e) {
             console.error(e);
           }
         }
-      })
+      });
 
       // Inspired by https://github.com/web-audio-components/simple-reverb/blob/master/index.js
       function reverb(ctx, seconds, decay, reverse = false) {
@@ -93,8 +101,10 @@
         const impulseR = impulse.getChannelData(1);
         for (let i = 0; i < length; i++) {
           const n = reverse ? length - i : i;
-          impulseL[i] = (Math.random() * 2 - 1) * Math.pow(1 - n / length, decay);
-          impulseR[i] = (Math.random() * 2 - 1) * Math.pow(1 - n / length, decay);
+          impulseL[i] =
+            (Math.random() * 2 - 1) * Math.pow(1 - n / length, decay);
+          impulseR[i] =
+            (Math.random() * 2 - 1) * Math.pow(1 - n / length, decay);
         }
         const reverbNode = ctx.createConvolver();
         reverbNode.buffer = impulse;
@@ -107,18 +117,17 @@
         const bufferSize = 4096;
         let lastOut = 0.0;
         const node = ctx.createScriptProcessor(bufferSize, 1, 1);
-        node.onaudioprocess = function(e) {
+        node.onaudioprocess = function (e) {
           let output = e.outputBuffer.getChannelData(0);
           for (let i = 0; i < bufferSize; i++) {
             const white = Math.random() * 2 - 1;
-            output[i] = (lastOut + (0.02 * white)) / 1.02;
+            output[i] = (lastOut + 0.02 * white) / 1.02;
             lastOut = output[i];
             output[i] *= 3.5; // (roughly) compensate for gain
           }
-        }
+        };
         return node;
       }
     </script>
-    </div>
   </body>
 </html>

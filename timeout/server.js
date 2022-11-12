@@ -12,10 +12,10 @@ let hasPremium = false;
 
 function updateComputerTimeout(comp, timeout) {
   const headers = {
-    Authorization: `Bearer ${comp.admin_token}`
+    Authorization: `Bearer ${comp.admin_token}`,
   };
   const computerBaseUrl = comp.embed_url.split("?")[0];
-  return axios.post(`${computerBaseUrl}/timeout`, timeout, {headers});
+  return axios.post(`${computerBaseUrl}/timeout`, timeout, { headers });
 }
 
 function listen(webhookUrl, bearer) {
@@ -32,10 +32,10 @@ function listen(webhookUrl, bearer) {
         await updateComputerTimeout(computer, {
           offline: 30,
           inactive: 60,
-          absolute: 60*60*2, // null // set the value to "null" to eliminate the timeout
+          absolute: 60 * 60 * 2, // null // set the value to "null" to eliminate the timeout
         });
       } catch (e) {
-        console.error("updateComputerTimeout failed:", e)
+        console.error("updateComputerTimeout failed:", e);
       }
     }
     res.sendStatus(200);
@@ -49,14 +49,14 @@ function listen(webhookUrl, bearer) {
           offline: 10,
           inactive: 30,
           absolute: 60,
-          reset: false
+          reset: false,
         });
       } catch (e) {
-        console.error("updateComputerTimeout failed:", e)
+        console.error("updateComputerTimeout failed:", e);
       }
     }
     res.sendStatus(200);
-  })
+  });
 
   app.get("/computer", async (req, res) => {
     if (computer) {
@@ -71,33 +71,39 @@ function listen(webhookUrl, bearer) {
         warning: 15,
         webhook: {
           url: webhookUrl,
-          bearer
-        }
-      }
+          bearer,
+        },
+      },
     };
     const headers = {
-      Authorization: `Bearer ${process.env.HB_API_KEY}`
+      Authorization: `Bearer ${process.env.HB_API_KEY}`,
     };
-    const resp = await axios.post("https://engine.hyperbeam.com/v0/vm", settings, {headers});
+    const resp = await axios.post(
+      "https://engine.hyperbeam.com/v0/vm",
+      settings,
+      { headers }
+    );
     computer = resp.data;
     res.send({
       hasPremium,
-      computer
+      computer,
     });
   });
 
   app.post("/webhook", async (req, res) => {
-    const {session_id, type} = req.body;
+    const { session_id, type } = req.body;
     const incomingBearer = req.get("Authorization").slice(7); // Slice off "Bearer " prefix
     if (bearer !== incomingBearer) {
       console.log(`Incorrect incoming bearer token, token=${incomingBearer}`);
       res.sendStatus(401);
       return;
     }
-    console.log(`Hyperbeam computer with session_id=${session_id} timed out, timeout type=${type}`);
+    console.log(
+      `Hyperbeam computer with session_id=${session_id} timed out, timeout type=${type}`
+    );
     computer = undefined;
     res.sendStatus(200);
-  })
+  });
 
   app.listen(port, () => {
     console.log(`Server started at http://localhost:${port.toString()}`);
@@ -109,7 +115,10 @@ async function main() {
   try {
     bearerBytes = await randomBytes(32);
   } catch (e) {
-    console.error("crypto failed to generate 32 random bytes for webhook token:", e);
+    console.error(
+      "crypto failed to generate 32 random bytes for webhook token:",
+      e
+    );
     return;
   }
   try {
