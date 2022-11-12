@@ -13,7 +13,8 @@
         margin: 1rem;
         font-size: 20px;
         font-family: sans-serif;
-        background-color: rgb(0, 127, 239);
+        background-color: rgb(0, 127, 239, 0.2);
+        border: 2px solid  rgb(0, 127, 239, 0.2);
         display: inline-block;
         box-sizing: border-box;
         position: relative;
@@ -25,7 +26,11 @@
       .bar {
         position: absolute;
         top: 100%;
+        left: -2px;
         background-color: rgb(0, 127, 239);
+        border-bottom: 2px solid rgb(0, 127, 239, 0.2);
+        border-left: 2px solid rgb(0, 127, 239, 0.2);
+        border-right: 2px solid rgb(0, 127, 239, 0.2);
         height: 36px;
         width: 100%;
         text-align: center;
@@ -40,13 +45,16 @@
         display: inline-block;
         margin: 4px auto;
       }
-      .lock path {
+      path {
         fill: #fff;
+      }
+      .hidden {
+        display: none;
       }
     </style>
   </head>
   <body>
-    <div class="resize-drag">
+    <div class="resize-drag hidden">
       <div id="cloudComputerDiv"></div>
       <div class="bar">
         <button id="unlock" class="lock">
@@ -70,32 +78,48 @@
         target.style.transform = `translate(${x}px, ${y}px)`;
         target.setAttribute('data-x', x);
         target.setAttribute('data-y', y);
+        localStorage.setItem('x', x.toString());
+        localStorage.setItem('y', y.toString());
       }
 
       function enableInteractives(hb) {
-        lock.classList.remove("hidden");
-        unlock.classList.add("hidden");
+        lock.classList.remove('hidden');
+        unlock.classList.add('hidden');
         interact('.resize-drag')
           .resizable({
             edges: { left: true, right: true, bottom: true, top: true },
             listeners: {
               move (event) {
                 const target = event.target;
+                const width = Math.floor(event.rect.width);
+                const height = Math.floor(event.rect.height);
                 let x = (parseFloat(target.getAttribute('data-x')) || 0);
                 let y = (parseFloat(target.getAttribute('data-y')) || 0);
-
-                let width = Math.floor(event.rect.width)
-                let height = Math.floor(event.rect.height)
-                if (width * height <= hb.initialWidth * hb.initialHeight) {
-                  hb.resize(width, height)
-                }
 
                 x += event.deltaRect.left;
                 y += event.deltaRect.top;
 
+                target.style.width = `${width}px`;
+                target.style.height = `${height}px`;
                 target.style.transform = `translate(${x}px, ${y}px)`;
                 target.setAttribute('data-x', x);
                 target.setAttribute('data-y', y);
+                localStorage.setItem('x', x.toString());
+                localStorage.setItem('y', y.toString());
+              },
+              end (event) {
+                const target = event.target;
+                const desiredWidth = event.rect.width;
+                const desiredHeight = event.rect.height;
+                const pixels = Math.min(desiredWidth * desiredHeight, hb.initialWidth * hb.initialHeight);
+                const aspectRatio = desiredWidth / desiredHeight;
+                const height = Math.floor(Math.sqrt(pixels / aspectRatio));
+                const width = Math.floor(height * aspectRatio);
+                hb.resize(width, height);
+                localStorage.setItem('width', width.toString());
+                localStorage.setItem('height', height.toString());
+                target.style.width = 'initial';
+                target.style.height = 'initial';
               }
             },
             modifiers: [
@@ -112,12 +136,33 @@
       }
 
       function disableInteractives() {
-        lock.classList.add("hidden");
-        unlock.classList.remove("hidden");
+        lock.classList.add('hidden');
+        unlock.classList.remove('hidden');
         interact('.resize-drag').unset();
       }
 
-      const resp = await fetch('/computer');
+      const container = cloudComputerDiv.parentElement;
+      const initX = localStorage.getItem('x');
+      const initY = localStorage.getItem('y');
+      if (initX && initY) {
+        container.style.transform = `translate(${initX}px, ${initY}px)`;
+        container.setAttribute('data-x', ~~initX);
+        container.setAttribute('data-y', ~~initY);
+      }
+      const initWidth = localStorage.getItem('width');
+      const initHeight = localStorage.getItem('height');
+      let baseUrl = '/computer';
+      if (initWidth && initHeight) {
+        baseUrl += `?width=${initWidth}&height=${initHeight}`;
+        container.style.width = `${initWidth}px`;
+        container.style.height = `${initHeight}px`;
+      } else {
+        container.style.width = '1280px';
+        container.style.height = '720px';
+      }
+      container.classList.remove('hidden');
+
+      const resp = await fetch(baseUrl);
       const data = await resp.json();
       const hb = await Hyperbeam(cloudComputerDiv, data.embed_url);
       lock.addEventListener('click', disableInteractives);
