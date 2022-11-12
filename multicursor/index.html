@@ -1,51 +1,77 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Hyperbeam multicursor example</title>
     <style>
-      .cursor {
-        width: 20px;
-        height: 20px;
-        position: absolute;
-        top: 0;
-        left: 0;
-        background-color: red;
-        border-radius: 50%;
-      }
       #hb-computer-container {
         width: 1280px;
         height: 720px;
+      }
+      .cursor {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 32px;
+        height: 32px;
+        pointer-events: none;
+        z-index: 1;
+        transition: opacity 1s ease;
+      }
+      .icon {
+        width: 32px;
+        height: 32px;
+        translate: -8px -8px;
+      }
+      .hidden {
+        display: none;
       }
     </style>
   </head>
   <body>
     <div id="hb-computer-container"></div>
+    <div class="cursor hidden">
+      <svg class="icon" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path
+          d="M14.3331 24.4662C14.4454 24.758 14.8616 24.7486 14.9605 24.4519L17.3333 17.3333L24.4519 14.9605C24.7486 14.8616 24.758 14.4454 24.4662 14.3331L8.70001 8.26923C8.43043 8.16555 8.16555 8.43043 8.26923 8.70001L14.3331 24.4662Z"
+          fill="red" />
+        <path
+          d="M14.3331 24.4662C14.4454 24.758 14.8616 24.7486 14.9605 24.4519L17.3333 17.3333L24.4519 14.9605C24.7486 14.8616 24.758 14.4454 24.4662 14.3331L8.70001 8.26923C8.43043 8.16555 8.16555 8.43043 8.26923 8.70001L14.3331 24.4662Z"
+          stroke="white"
+          stroke-linejoin="round" />
+      </svg>
+    </div>
     <script type="module">
-      import Hyperbeam from 'http://localhost:8080/api/dist/index.js'
+      import Hyperbeam from 'https://unpkg.com/@hyperbeam/web@latest/dist/index.js'
 
-      const resp = await fetch('http://localhost:8081/computer');
+      const resp = await fetch('/computer');
       const data = await resp.json();
+      const cursorNode = document.querySelector('.cursor')
 
       const container = document.getElementById('hb-computer-container');
       const rect = container.getBoundingClientRect();
       const cursors = new Map();
 
       function newCursor(userId) {
-        const elm = document.createElement('div');
-        elm.classList.add('cursor');
+        const elm = cursorNode.cloneNode(true)
+        elm.classList.remove('hidden')
         document.body.appendChild(elm);
-        const onTimeout = () => {
-          elm.remove();
-          cursors.delete(userId);
+        const onCloseTimeout = () => {
+            cursors.delete(userId);
+            elm.remove();
         };
-        let timeout = setTimeout(onTimeout, 5000);
+        const onFadeTimeout = () => {
+          elm.style.opacity = 0;
+        };
+        let closeTimeout = setTimeout(onCloseTimeout, 9000);
+        let fadeTimeout = setTimeout(onFadeTimeout, 5000);
         const update = (p) => {
+          elm.style.opacity = 1;
           elm.style.setProperty('transform', `translate(${p[0]}px, ${p[1]}px)`);
-          clearTimeout(timeout);
-          timeout = setTimeout(onTimeout, 5000);
+          clearTimeout(closeTimeout);
+          clearTimeout(fadeTimeout);
+          closeTimeout = setTimeout(onCloseTimeout, 9000);
+          fadeTimeout = setTimeout(onFadeTimeout, 5000);
         };
         cursors.set(userId, update);
       }
