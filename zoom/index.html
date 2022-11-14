@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Hyperbeam AudioContext example</title>
+  </head>
+  <body>
+    <div>
+      <div style="font-family: sans-serif">
+        <form name="controls">
+          Zoom:
+          <input
+            type="range"
+            id="zoom"
+            min="0.1"
+            max="2"
+            value="1"
+            step="0.1"
+          />
+          <input
+            type="radio"
+            id="radio-origin"
+            name="scope"
+            value="per-origin"
+            checked
+          />
+          <label for="radio-origin">per-origin</label>
+          <input type="radio" id="radio-tab" name="scope" value="per-tab" />
+          <label for="radio-tab">per-tab</label><br />
+        </form>
+      </div>
+      <div id="cloudComputerDiv" style="height: 720px; width: 1280px"></div>
+    </div>
+    <script type="module">
+      import Hyperbeam from "https://unpkg.com/@hyperbeam/web@latest/dist/index.js";
+      const resp = await fetch("/computer");
+      const data = await resp.json();
+      const hb = await Hyperbeam(cloudComputerDiv, data.embed_url);
+      const radioBtns = document.controls.scope;
+      let tabId;
+
+      const zoomFactor = await hb.tabs.getZoom();
+      zoom.value = zoomFactor;
+      const zoomSettings = await hb.tabs.getZoomSettings();
+      updateZoomScope(zoomSettings.scope);
+
+      for (const radioBtn of radioBtns) {
+        radioBtn.addEventListener("change", setZoomScope);
+      }
+      zoom.addEventListener("input", (e) => {
+        hb.tabs.setZoom(Number(e.target.value));
+      });
+      // Note this function may fire for tabs that are not activated
+      // You should check if the tabIds match
+      hb.tabs.onZoomChange.addListener((info) => {
+        if (!tabId || tabId === info.tabId) {
+          zoom.value = info.newZoomFactor;
+          updateZoomScope(info.zoomSettings.scope);
+        }
+      });
+      // Note that each tab can have different zoom values and settings
+      hb.tabs.onActivated.addListener(async (info) => {
+        tabId = info.tabId;
+        zoom.value = await hb.tabs.getZoom(tabId);
+        const zoomSettings = await hb.tabs.getZoomSettings(tabId);
+        updateZoomScope(zoomSettings.scope);
+      });
+
+      function setZoomScope(e) {
+        hb.tabs.setZoomSettings({
+          // defaultZoomFactor just sets the value returned by getZoomSettings()
+          // https://developer.chrome.com/docs/extensions/reference/tabs/#type-ZoomSettings
+          // https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/tabs/ZoomSettings
+          defaultZoomFactor: 1.5,
+          scope: e.target.value,
+        });
+      }
+
+      function updateZoomScope(scope) {
+        for (const radioBtn of radioBtns) {
+          radioBtn.checked = scope === radioBtn.value;
+        }
+      }
+    </script>
+  </body>
+</html>
