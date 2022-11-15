@@ -22,17 +22,53 @@
     </div>
     <script type="module">
       import Hyperbeam from "https://unpkg.com/@hyperbeam/web@latest/dist/index.js";
-      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      const gainNode = audioCtx.createGain();
-      const noiseNode = brownNoise(audioCtx);
-      const reverbNode = reverb(audioCtx, 2, 4);
-      const resp = await fetch("/computer");
-      const data = await resp.json();
-      const hb = await Hyperbeam(cloudComputerDiv, data.embed_url, {
-        audioTrackCb: tryAudio,
-      });
 
-      let source;
+      async function main() {
+        const audioCtx = new (window.AudioContext ||
+          window.webkitAudioContext)();
+        const gainNode = audioCtx.createGain();
+        const noiseNode = brownNoise(audioCtx);
+        const reverbNode = reverb(audioCtx, 2, 4);
+        const resp = await fetch("/computer");
+        const data = await resp.json();
+        const hb = await Hyperbeam(cloudComputerDiv, data.embed_url, {
+          audioTrackCb: tryAudio,
+        });
+        let source;
+
+        volumeSlider.addEventListener("input", (e) => {
+          gainNode.gain.value = e.target.value;
+        });
+        reverbToggle.addEventListener("change", (e) => {
+          if (e.target.checked) {
+            enableReverb();
+          } else {
+            disableReverb();
+          }
+        });
+        noiseToggle.addEventListener("change", (e) => {
+          if (e.target.checked) {
+            enableNoise();
+          } else {
+            disableNoise();
+          }
+        });
+        window.addEventListener("mouseup", async () => {
+          // AudioContext will start in a suspended state if no user gestures
+          // have been received on the page: need to check if suspended and resume
+          if (audioCtx.state === "suspended") {
+            try {
+              await audioCtx.resume();
+              console.log("audioCtx state:", audioCtx.state);
+            } catch (e) {
+              console.error(e);
+            }
+          }
+        });
+      }
+
+      main();
+
       function tryAudio(track) {
         // audioCtx.createMediaStreamTrackSource(track) is only supported by Firefox
         const stream = new MediaStream([track]);
@@ -58,39 +94,6 @@
       function disableNoise() {
         noiseNode.disconnect();
       }
-
-      volumeSlider.addEventListener("input", (e) => {
-        gainNode.gain.value = e.target.value;
-      });
-
-      reverbToggle.addEventListener("change", (e) => {
-        if (e.target.checked) {
-          enableReverb();
-        } else {
-          disableReverb();
-        }
-      });
-
-      noiseToggle.addEventListener("change", (e) => {
-        if (e.target.checked) {
-          enableNoise();
-        } else {
-          disableNoise();
-        }
-      });
-
-      window.addEventListener("mouseup", async () => {
-        // AudioContext will start in a suspended state if no user gestures
-        // have been received on the page: need to check if suspended and resume
-        if (audioCtx.state === "suspended") {
-          try {
-            await audioCtx.resume();
-            console.log("audioCtx state:", audioCtx.state);
-          } catch (e) {
-            console.error(e);
-          }
-        }
-      });
 
       // Inspired by https://github.com/web-audio-components/simple-reverb/blob/master/index.js
       function reverb(ctx, seconds, decay, reverse = false) {
