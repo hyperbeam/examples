@@ -32,38 +32,43 @@
     </div>
     <script type="module">
       import Hyperbeam from "https://unpkg.com/@hyperbeam/web@latest/dist/index.js";
-      const resp = await fetch("/computer");
-      const data = await resp.json();
-      const hb = await Hyperbeam(cloudComputerDiv, data.embed_url);
-      const radioBtns = document.controls.scope;
-      let tabId;
 
-      const zoomFactor = await hb.tabs.getZoom();
-      zoom.value = zoomFactor;
-      const zoomSettings = await hb.tabs.getZoomSettings();
-      updateZoomScope(zoomSettings.scope);
+      async function main() {
+        const resp = await fetch("/computer");
+        const data = await resp.json();
+        const hb = await Hyperbeam(cloudComputerDiv, data.embed_url);
+        const radioBtns = document.controls.scope;
+        let tabId;
 
-      for (const radioBtn of radioBtns) {
-        radioBtn.addEventListener("change", setZoomScope);
-      }
-      zoom.addEventListener("input", (e) => {
-        hb.tabs.setZoom(Number(e.target.value));
-      });
-      // Note this function may fire for tabs that are not activated
-      // You should check if the tabIds match
-      hb.tabs.onZoomChange.addListener((info) => {
-        if (!tabId || tabId === info.tabId) {
-          zoom.value = info.newZoomFactor;
-          updateZoomScope(info.zoomSettings.scope);
-        }
-      });
-      // Note that each tab can have different zoom values and settings
-      hb.tabs.onActivated.addListener(async (info) => {
-        tabId = info.tabId;
-        zoom.value = await hb.tabs.getZoom(tabId);
-        const zoomSettings = await hb.tabs.getZoomSettings(tabId);
+        const zoomFactor = await hb.tabs.getZoom();
+        zoom.value = zoomFactor;
+        const zoomSettings = await hb.tabs.getZoomSettings();
         updateZoomScope(zoomSettings.scope);
-      });
+
+        for (const radioBtn of radioBtns) {
+          radioBtn.addEventListener("change", setZoomScope);
+        }
+        zoom.addEventListener("input", (e) => {
+          hb.tabs.setZoom(Number(e.target.value));
+        });
+        // Note this function may fire for tabs that are not activated
+        // You should check if the tabIds match
+        hb.tabs.onZoomChange.addListener((info) => {
+          if (!tabId || tabId === info.tabId) {
+            zoom.value = info.newZoomFactor;
+            updateZoomScope(info.zoomSettings.scope);
+          }
+        });
+        // Note that each tab can have different zoom values and settings
+        hb.tabs.onActivated.addListener(async (info) => {
+          tabId = info.tabId;
+          zoom.value = await hb.tabs.getZoom(tabId);
+          const zoomSettings = await hb.tabs.getZoomSettings(tabId);
+          updateZoomScope(zoomSettings.scope);
+        });
+      }
+
+      main();
 
       function setZoomScope(e) {
         hb.tabs.setZoomSettings({

@@ -95,6 +95,38 @@
     <script type="module">
       import Hyperbeam from "https://unpkg.com/@hyperbeam/web@latest/dist/index.js";
 
+      async function main() {
+        const container = cloudComputerDiv.parentElement;
+        const initX = localStorage.getItem("x");
+        const initY = localStorage.getItem("y");
+        if (initX && initY) {
+          container.style.transform = `translate(${initX}px, ${initY}px)`;
+          container.setAttribute("data-x", ~~initX);
+          container.setAttribute("data-y", ~~initY);
+        }
+        const initWidth = localStorage.getItem("width");
+        const initHeight = localStorage.getItem("height");
+        let baseUrl = "/computer";
+        if (initWidth && initHeight) {
+          baseUrl += `?width=${initWidth}&height=${initHeight}`;
+          container.style.width = `${initWidth}px`;
+          container.style.height = `${initHeight}px`;
+        } else {
+          container.style.width = "1280px";
+          container.style.height = "720px";
+        }
+        container.classList.remove("hidden");
+
+        const resp = await fetch(baseUrl);
+        const data = await resp.json();
+        const hb = await Hyperbeam(cloudComputerDiv, data.embed_url);
+        lock.addEventListener("click", disableInteractives);
+        unlock.addEventListener("click", () => enableInteractives(hb));
+        enableInteractives(hb);
+      }
+
+      main();
+
       function dragMoveListener(event) {
         const target = event.target;
         const x = (parseFloat(target.getAttribute("data-x")) || 0) + event.dx;
@@ -168,34 +200,6 @@
         unlock.classList.remove("hidden");
         interact(".resize-drag").unset();
       }
-
-      const container = cloudComputerDiv.parentElement;
-      const initX = localStorage.getItem("x");
-      const initY = localStorage.getItem("y");
-      if (initX && initY) {
-        container.style.transform = `translate(${initX}px, ${initY}px)`;
-        container.setAttribute("data-x", ~~initX);
-        container.setAttribute("data-y", ~~initY);
-      }
-      const initWidth = localStorage.getItem("width");
-      const initHeight = localStorage.getItem("height");
-      let baseUrl = "/computer";
-      if (initWidth && initHeight) {
-        baseUrl += `?width=${initWidth}&height=${initHeight}`;
-        container.style.width = `${initWidth}px`;
-        container.style.height = `${initHeight}px`;
-      } else {
-        container.style.width = "1280px";
-        container.style.height = "720px";
-      }
-      container.classList.remove("hidden");
-
-      const resp = await fetch(baseUrl);
-      const data = await resp.json();
-      const hb = await Hyperbeam(cloudComputerDiv, data.embed_url);
-      lock.addEventListener("click", disableInteractives);
-      unlock.addEventListener("click", () => enableInteractives(hb));
-      enableInteractives(hb);
     </script>
   </body>
 </html>

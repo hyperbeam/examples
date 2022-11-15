@@ -53,15 +53,32 @@
     <script type="module">
       import Hyperbeam from "https://unpkg.com/@hyperbeam/web@latest/dist/index.js";
 
-      const resp = await fetch("/computer");
-      const data = await resp.json();
-      const cursorNode = document.querySelector(".cursor");
+      async function main() {
+        const resp = await fetch("/computer");
+        const data = await resp.json();
+        const cursorNode = document.querySelector(".cursor");
+        const container = document.getElementById("hb-computer-container");
+        const rect = container.getBoundingClientRect();
+        const cursors = new Map();
 
-      const container = document.getElementById("hb-computer-container");
-      const rect = container.getBoundingClientRect();
-      const cursors = new Map();
+        const hb = await Hyperbeam(container, data.embed_url, {
+          onCursor({ x, y, userId }) {
+            if (!cursors.has(userId)) {
+              newCursor(userId, cursors);
+            }
+            const updateCursor = cursors.get(userId);
+            const position = [
+              container.offsetWidth * x + rect.left,
+              container.offsetHeight * y + rect.top,
+            ];
+            updateCursor(position);
+          },
+        });
+      }
 
-      function newCursor(userId) {
+      main();
+
+      function newCursor(userId, cursors) {
         const elm = cursorNode.cloneNode(true);
         elm.classList.remove("hidden");
         document.body.appendChild(elm);
@@ -84,20 +101,6 @@
         };
         cursors.set(userId, update);
       }
-
-      const hb = await Hyperbeam(container, data.embed_url, {
-        onCursor({ x, y, userId }) {
-          if (!cursors.has(userId)) {
-            newCursor(userId);
-          }
-          const updateCursor = cursors.get(userId);
-          const position = [
-            container.offsetWidth * x + rect.left,
-            container.offsetHeight * y + rect.top,
-          ];
-          updateCursor(position);
-        },
-      });
     </script>
   </body>
 </html>
