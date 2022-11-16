@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
-    "build": "cd ./extension/ && zip -r ../extension.zip .",
+    "build": "cross-zip ./extension ./extension.zip",
     "postinstall": "npm run build"
   },
   "keywords": [],
@@ -14,6 +14,7 @@
   "license": "MIT",
   "dependencies": {
     "axios": "^1.1.2",
+    "cross-zip-cli": "^1.0.0",
     "express": "^4.18.2",
     "form-data": "^4.0.0"
   }

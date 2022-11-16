@@ -38,6 +38,7 @@ function listen(webhookUrl, bearer) {
         console.error("updateComputerTimeout failed:", e);
       }
     }
+    console.log("Upgraded to premium");
     res.sendStatus(200);
   });
 
@@ -55,6 +56,7 @@ function listen(webhookUrl, bearer) {
         console.error("updateComputerTimeout failed:", e);
       }
     }
+    console.log("Cancelled premium");
     res.sendStatus(200);
   });
 
@@ -64,6 +66,7 @@ function listen(webhookUrl, bearer) {
       return;
     }
     const settings = {
+      ublock: true,
       timeout: {
         offline: 10,
         inactive: 30,

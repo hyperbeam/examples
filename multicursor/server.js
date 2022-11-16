@@ -23,6 +23,7 @@ app.get("/computer", async (req, res) => {
   const hbConfig = {
     hide_cursor: true,
     default_roles: roles,
+    ublock: true,
     timeout: {
       offline: 10,
     },

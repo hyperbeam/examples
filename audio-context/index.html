@@ -3,6 +3,7 @@
   <head>
     <title>Hyperbeam AudioContext example</title>
   </head>
+
   <body>
     <div>
       <div style="font-family: sans-serif">
@@ -23,12 +24,13 @@
     <script type="module">
       import Hyperbeam from "https://unpkg.com/@hyperbeam/web@latest/dist/index.js";
 
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      let source;
+      const gainNode = audioCtx.createGain();
+      const noiseNode = brownNoise(audioCtx);
+      const reverbNode = reverb(audioCtx, 4, 4);
+
       async function main() {
-        const audioCtx = new (window.AudioContext ||
-          window.webkitAudioContext)();
-        const gainNode = audioCtx.createGain();
-        const noiseNode = brownNoise(audioCtx);
-        const reverbNode = reverb(audioCtx, 2, 4);
         const resp = await fetch("/computer");
         const data = await resp.json();
         const hb = await Hyperbeam(cloudComputerDiv, data.embed_url, {

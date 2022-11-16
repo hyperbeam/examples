@@ -7,15 +7,25 @@
     "prettier": "2.7.1"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "format": "prettier --write ."
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/hyperbeam/examples.git"
   },
+  "workspaces": [
+    "audio-context",
+    "chrome-extension",
+    "multicursor",
+    "persistence",
+    "resize",
+    "timeout",
+    "zoom"
+  ],
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/hyperbeam/examples/issues"
   },
