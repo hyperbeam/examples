@@ -3,6 +3,7 @@
   <head>
     <title>Hyperbeam AudioContext example</title>
   </head>
+
   <body>
     <div>
       <div style="font-family: sans-serif">
@@ -66,25 +67,25 @@
           const zoomSettings = await hb.tabs.getZoomSettings(tabId);
           updateZoomScope(zoomSettings.scope);
         });
+
+        function setZoomScope(e) {
+          hb.tabs.setZoomSettings({
+            // defaultZoomFactor just sets the value returned by getZoomSettings()
+            // https://developer.chrome.com/docs/extensions/reference/tabs/#type-ZoomSettings
+            // https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/tabs/ZoomSettings
+            defaultZoomFactor: 1.5,
+            scope: e.target.value,
+          });
+        }
+
+        function updateZoomScope(scope) {
+          for (const radioBtn of radioBtns) {
+            radioBtn.checked = scope === radioBtn.value;
+          }
+        }
       }
 
       main();
-
-      function setZoomScope(e) {
-        hb.tabs.setZoomSettings({
-          // defaultZoomFactor just sets the value returned by getZoomSettings()
-          // https://developer.chrome.com/docs/extensions/reference/tabs/#type-ZoomSettings
-          // https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/tabs/ZoomSettings
-          defaultZoomFactor: 1.5,
-          scope: e.target.value,
-        });
-      }
-
-      function updateZoomScope(scope) {
-        for (const radioBtn of radioBtns) {
-          radioBtn.checked = scope === radioBtn.value;
-        }
-      }
     </script>
   </body>
 </html>

@@ -72,6 +72,7 @@ app.get("/computer", async (req, res) => {
     timeout: {
       offline: 10,
     },
+    ublock: true,
   };
   const headers = {
     Authorization: `Bearer ${process.env.HB_API_KEY}`,

@@ -18,6 +18,7 @@ app.get("/computer", async (req, res) => {
     timeout: {
       offline: 10,
     },
+    ublock: true,
   };
   const resp = await axios.post(
     "https://engine.hyperbeam.com/v0/vm",

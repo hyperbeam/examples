@@ -8,6 +8,7 @@
         width: 1280px;
         height: 720px;
       }
+
       .cursor {
         position: absolute;
         left: 0;
@@ -18,16 +19,19 @@
         z-index: 1;
         transition: opacity 1s ease;
       }
+
       .icon {
         width: 32px;
         height: 32px;
         translate: -8px -8px;
       }
+
       .hidden {
         display: none;
       }
     </style>
   </head>
+
   <body>
     <div id="hb-computer-container"></div>
     <div class="cursor hidden">
@@ -53,14 +57,14 @@
     <script type="module">
       import Hyperbeam from "https://unpkg.com/@hyperbeam/web@latest/dist/index.js";
 
+      const cursorNode = document.querySelector(".cursor");
+      const container = document.getElementById("hb-computer-container");
+      const rect = container.getBoundingClientRect();
+      const cursors = new Map();
+
       async function main() {
         const resp = await fetch("/computer");
         const data = await resp.json();
-        const cursorNode = document.querySelector(".cursor");
-        const container = document.getElementById("hb-computer-container");
-        const rect = container.getBoundingClientRect();
-        const cursors = new Map();
-
         const hb = await Hyperbeam(container, data.embed_url, {
           onCursor({ x, y, userId }) {
             if (!cursors.has(userId)) {
