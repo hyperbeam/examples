@@ -33,6 +33,7 @@
   </head>
 
   <body>
+    <button id="stop-cursor">Stop sending cursor events</button>
     <div id="hb-computer-container"></div>
     <div class="cursor hidden">
       <svg
@@ -58,11 +59,24 @@
       import Hyperbeam from "https://unpkg.com/@hyperbeam/web@latest/dist/index.js";
 
       const cursorNode = document.querySelector(".cursor");
+      const stopCursorEvents = document.getElementById("stop-cursor");
       const container = document.getElementById("hb-computer-container");
       const rect = container.getBoundingClientRect();
       const cursors = new Map();
 
       async function main() {
+        let cursorOn = true;
+        stopCursorEvents.addEventListener("click", () => {
+          if (cursorOn) {
+            stopCursorEvents.innerText = "Start sending cursor events";
+            disableInput(container);
+            cursorOn = false;
+          } else {
+            stopCursorEvents.innerText = "Stop sending cursor events";
+            enableInput(container);
+            cursorOn = true;
+          }
+        });
         const resp = await fetch("/computer");
         const data = await resp.json();
         const hb = await Hyperbeam(container, data.embed_url, {
@@ -104,6 +118,24 @@
           fadeTimeout = setTimeout(onFadeTimeout, 5000);
         };
         cursors.set(userId, update);
+      }
+
+      function cancelInput(e) {
+        e.stopPropagation();
+      }
+      function disableInput(div) {
+        div.addEventListener("mousemove", cancelInput, true);
+        div.addEventListener("mousedown", cancelInput, true);
+        div.addEventListener("mouseup", cancelInput, true);
+        const vid = div.shadowRoot.getElementById("vid");
+        if (vid) {
+          vid.style.cursor = null;
+        }
+      }
+      function enableInput(div) {
+        div.removeEventListener("mousemove", cancelInput, true);
+        div.removeEventListener("mousedown", cancelInput, true);
+        div.removeEventListener("mouseup", cancelInput, true);
       }
     </script>
   </body>
