@@ -2,21 +2,50 @@
 <html>
   <head>
     <title>Hyperbeam AudioContext example</title>
+    <style>
+      body {
+        font-family: sans-serif;
+      }
+
+      .toolbar {
+        display: flex;
+        
+        justify-content: center;
+        align-items: center;
+        
+      }
+
+      .toolbar > .group {
+        display: flex;
+        
+        align-items: center;
+        margin: 0 10px;
+      }
+
+      #cloudComputerDiv {
+        position: fixed;
+        inset: 0;
+        top: 50px;
+      }
+    </style>
   </head>
 
   <body>
     <div>
-      <div style="font-family: sans-serif">
-        <form name="controls">
+      <div class="toolbar">
+        <div class="group">
           Zoom:
           <input
             type="range"
+            name="zoom"
             id="zoom"
             min="0.1"
             max="2"
             value="1"
             step="0.1"
           />
+        </div>
+        <div class="group">
           <input
             type="radio"
             id="radio-origin"
@@ -25,11 +54,13 @@
             checked
           />
           <label for="radio-origin">per-origin</label>
+        </div>
+        <div class="group">
           <input type="radio" id="radio-tab" name="scope" value="per-tab" />
-          <label for="radio-tab">per-tab</label><br />
-        </form>
+          <label for="radio-tab">per-tab</label>
+        </div>
       </div>
-      <div id="cloudComputerDiv" style="height: 720px; width: 1280px"></div>
+      <div id="cloudComputerDiv"></div>
     </div>
     <script type="module">
       import Hyperbeam from "https://unpkg.com/@hyperbeam/web@latest/dist/index.js";
@@ -38,32 +69,37 @@
         const resp = await fetch("/computer");
         const data = await resp.json();
         const hb = await Hyperbeam(cloudComputerDiv, data.embed_url);
-        const radioBtns = document.controls.scope;
+        const zoomInput = document.getElementById("zoom");
+        const radioBtns = document.getElementsByName("scope");
         let tabId;
 
         const zoomFactor = await hb.tabs.getZoom();
-        zoom.value = zoomFactor;
+        zoomInput.value = zoomFactor;
+
         const zoomSettings = await hb.tabs.getZoomSettings();
         updateZoomScope(zoomSettings.scope);
 
         for (const radioBtn of radioBtns) {
           radioBtn.addEventListener("change", setZoomScope);
         }
-        zoom.addEventListener("input", (e) => {
+
+        zoomInput.addEventListener("input", (e) => {
           hb.tabs.setZoom(Number(e.target.value));
         });
+
         // Note this function may fire for tabs that are not activated
         // You should check if the tabIds match
         hb.tabs.onZoomChange.addListener((info) => {
           if (!tabId || tabId === info.tabId) {
-            zoom.value = info.newZoomFactor;
+            zoomInput.value = info.newZoomFactor;
             updateZoomScope(info.zoomSettings.scope);
           }
         });
+
         // Note that each tab can have different zoom values and settings
         hb.tabs.onActivated.addListener(async (info) => {
           tabId = info.tabId;
-          zoom.value = await hb.tabs.getZoom(tabId);
+          zoomInput.value = await hb.tabs.getZoom(tabId);
           const zoomSettings = await hb.tabs.getZoomSettings(tabId);
           updateZoomScope(zoomSettings.scope);
         });
