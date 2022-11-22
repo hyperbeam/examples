@@ -6,23 +6,54 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Hyperbeam Persistence Example</title>
     <style>
+      body {
+        font-family: sans-serif;
+      }
+
       .box {
-        width: 100px;
-        height: 100px;
-        border: 1px solid #000;
-        display: inline-block;
+        display: inline-grid;
+        grid-template-rows: repeat(3, 1fr);
+        grid-template-columns: repeat(3, 1fr);
+        align-items: center;
+        justify-items: center;
+        gap: 10px;
         margin: 10px;
+        border-radius: 10px;
+        background-color: rgba(0, 0, 0, 0.1);
+        padding: 10px;
+        width: 136px;
+        height: 136px;
         vertical-align: top;
         cursor: pointer;
       }
+
+      .box > img {
+        width: 32px;
+        height: 32px;
+      }
+
+      #new-computer {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+
       .hidden {
         display: none;
+      }
+
+      #hb-computer-container {
+        position: fixed;
+        inset: 0;
+        top: 50px;
       }
     </style>
   </head>
   <body>
     <div id="menu" class="hidden">
-      <div id="new-computer" class="box"><p>Create new</p></div>
+      <div id="new-computer" class="box">
+        <p>Create new</p>
+      </div>
     </div>
     <div id="computer-page" class="hidden">
       <button id="exit-btn">Save and exit</button>
