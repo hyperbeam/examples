@@ -2,6 +2,18 @@
 <html>
   <head>
     <title>Hyperbeam AudioContext example</title>
+    <style>
+      /* #cloudComputerDiv {
+        height: 720px;
+        width: 1280px;
+      } */
+
+      #cloudComputerDiv {
+        position: fixed;
+        inset: 0;
+        top: 50px;
+      }
+    </style>
   </head>
 
   <body>
@@ -19,7 +31,7 @@
         Reverb: <input type="checkbox" id="reverbToggle" /> Noise:
         <input type="checkbox" id="noiseToggle" />
       </div>
-      <div id="cloudComputerDiv" style="height: 720px; width: 1280px"></div>
+      <div id="cloudComputerDiv"></div>
     </div>
     <script type="module">
       import Hyperbeam from "https://unpkg.com/@hyperbeam/web@latest/dist/index.js";
