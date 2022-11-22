@@ -4,9 +4,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Hyperbeam multicursor example</title>
     <style>
-      #hb-computer-container {
+      #hb-large-container {
         width: 1280px;
         height: 720px;
+      }
+
+      #hb-mini-container {
+        width: 500px;
+        height: 240px;
+        background-color: black;
+        position: fixed;
+        top: 10px;
+        right: 10px;
       }
 
       .cursor {
@@ -33,7 +42,11 @@
   </head>
 
   <body>
-    <div id="hb-computer-container"></div>
+    <div>
+      <button id="stop-cursor">Stop sending cursor events</button>
+    </div>
+    <div id="hb-mini-container"></div>
+    <div id="hb-large-container"></div>
     <div class="cursor hidden">
       <svg
         class="icon"
@@ -58,30 +71,62 @@
       import Hyperbeam from "https://unpkg.com/@hyperbeam/web@latest/dist/index.js";
 
       const cursorNode = document.querySelector(".cursor");
-      const container = document.getElementById("hb-computer-container");
-      const rect = container.getBoundingClientRect();
-      const cursors = new Map();
+      const stopCursorEvents = document.getElementById("stop-cursor");
+      const largeContainer = document.getElementById("hb-large-container");
+      const miniContainer = document.getElementById("hb-mini-container");
 
       async function main() {
         const resp = await fetch("/computer");
         const data = await resp.json();
-        const hb = await Hyperbeam(container, data.embed_url, {
+        loadHyperbeam(largeContainer, data.embed_url);
+        loadHyperbeam(miniContainer, data.embed_url);
+      }
+
+      main();
+
+      async function loadHyperbeam(container, embedUrl) {
+        const rect = container.getBoundingClientRect();
+        const cursors = new Map();
+        let cursorOn = true;
+        stopCursorEvents.addEventListener("click", () => {
+          if (cursorOn) {
+            stopCursorEvents.innerText = "Start sending cursor events";
+            disableInput(container);
+            cursorOn = false;
+          } else {
+            stopCursorEvents.innerText = "Stop sending cursor events";
+            enableInput(container);
+            cursorOn = true;
+          }
+        });
+
+        const hb = await Hyperbeam(container, embedUrl, {
           onCursor({ x, y, userId }) {
             if (!cursors.has(userId)) {
               newCursor(userId, cursors);
             }
+            // The container's width and height may not match Hyperbeam's dimensions,
+            // so we need to compute Hyperbeam's dimensions and apply an offset
+            const hbAspectRatio = hb.width / hb.height;
+            const hbOffsetWidth =
+              container.offsetWidth > container.offsetHeight
+                ? container.offsetHeight * hbAspectRatio
+                : container.offsetWidth;
+            const hbOffsetHeight = hbOffsetWidth / hbAspectRatio;
+
             const updateCursor = cursors.get(userId);
             const position = [
-              container.offsetWidth * x + rect.left,
-              container.offsetHeight * y + rect.top,
+              hbOffsetWidth * x +
+                rect.left +
+                (container.offsetWidth - hbOffsetWidth) / 2,
+              hbOffsetHeight * y +
+                rect.top +
+                (container.offsetHeight - hbOffsetHeight) / 2,
             ];
             updateCursor(position);
           },
         });
       }
-
-      main();
-
       function newCursor(userId, cursors) {
         const elm = cursorNode.cloneNode(true);
         elm.classList.remove("hidden");
@@ -104,6 +149,23 @@
           fadeTimeout = setTimeout(onFadeTimeout, 5000);
         };
         cursors.set(userId, update);
+      }
+      function cancelInput(e) {
+        e.stopPropagation();
+      }
+      function disableInput(div) {
+        div.addEventListener("mousemove", cancelInput, true);
+        div.addEventListener("mousedown", cancelInput, true);
+        div.addEventListener("mouseup", cancelInput, true);
+        const vid = div.shadowRoot.getElementById("vid");
+        if (vid) {
+          vid.style.cursor = null;
+        }
+      }
+      function enableInput(div) {
+        div.removeEventListener("mousemove", cancelInput, true);
+        div.removeEventListener("mousedown", cancelInput, true);
+        div.removeEventListener("mouseup", cancelInput, true);
       }
     </script>
   </body>
