@@ -10,12 +10,15 @@
       }
 
       #hb-mini-container {
+        /* 16/9 aspect-ratio */
         width: 500px;
-        height: 240px;
+        height: 281px;
         background-color: black;
         position: fixed;
         top: 10px;
         right: 10px;
+        z-index: 1;
+        border: 1px solid black;
       }
 
       .cursor {
@@ -25,7 +28,7 @@
         width: 32px;
         height: 32px;
         pointer-events: none;
-        z-index: 1;
+        z-index: 2;
         transition: opacity 1s ease;
       }
 
@@ -43,7 +46,7 @@
 
   <body>
     <div>
-      <button id="stop-cursor">Stop sending cursor events</button>
+      <button id="cursor-events-toggle">Stop sending cursor events</button>
     </div>
     <div id="hb-mini-container"></div>
     <div id="hb-large-container"></div>
@@ -71,7 +74,9 @@
       import Hyperbeam from "https://unpkg.com/@hyperbeam/web@latest/dist/index.js";
 
       const cursorNode = document.querySelector(".cursor");
-      const stopCursorEvents = document.getElementById("stop-cursor");
+      const cursorEventsToggle = document.getElementById(
+        "cursor-events-toggle"
+      );
       const largeContainer = document.getElementById("hb-large-container");
       const miniContainer = document.getElementById("hb-mini-container");
 
@@ -88,13 +93,14 @@
         const rect = container.getBoundingClientRect();
         const cursors = new Map();
         let cursorOn = true;
-        stopCursorEvents.addEventListener("click", () => {
+
+        cursorEventsToggle.addEventListener("click", () => {
           if (cursorOn) {
-            stopCursorEvents.innerText = "Start sending cursor events";
+            cursorEventsToggle.innerText = "Start sending cursor events";
             disableInput(container);
             cursorOn = false;
           } else {
-            stopCursorEvents.innerText = "Stop sending cursor events";
+            cursorEventsToggle.innerText = "Stop sending cursor events";
             enableInput(container);
             cursorOn = true;
           }
@@ -113,7 +119,6 @@
                 ? container.offsetHeight * hbAspectRatio
                 : container.offsetWidth;
             const hbOffsetHeight = hbOffsetWidth / hbAspectRatio;
-
             const updateCursor = cursors.get(userId);
             const position = [
               hbOffsetWidth * x +
@@ -127,19 +132,24 @@
           },
         });
       }
+
       function newCursor(userId, cursors) {
         const elm = cursorNode.cloneNode(true);
         elm.classList.remove("hidden");
         document.body.appendChild(elm);
+
         const onCloseTimeout = () => {
           cursors.delete(userId);
           elm.remove();
         };
+
         const onFadeTimeout = () => {
           elm.style.opacity = 0;
         };
+
         let closeTimeout = setTimeout(onCloseTimeout, 9000);
         let fadeTimeout = setTimeout(onFadeTimeout, 5000);
+
         const update = (p) => {
           elm.style.opacity = 1;
           elm.style.setProperty("transform", `translate(${p[0]}px, ${p[1]}px)`);
@@ -148,11 +158,14 @@
           closeTimeout = setTimeout(onCloseTimeout, 9000);
           fadeTimeout = setTimeout(onFadeTimeout, 5000);
         };
+
         cursors.set(userId, update);
       }
+
       function cancelInput(e) {
         e.stopPropagation();
       }
+
       function disableInput(div) {
         div.addEventListener("mousemove", cancelInput, true);
         div.addEventListener("mousedown", cancelInput, true);
@@ -162,6 +175,7 @@
           vid.style.cursor = null;
         }
       }
+
       function enableInput(div) {
         div.removeEventListener("mousemove", cancelInput, true);
         div.removeEventListener("mousedown", cancelInput, true);
