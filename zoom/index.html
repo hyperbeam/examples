@@ -3,6 +3,25 @@
   <head>
     <title>Hyperbeam AudioContext example</title>
     <style>
+      body {
+        font-family: sans-serif;
+      }
+
+      .toolbar {
+        display: flex;
+        
+        justify-content: center;
+        align-items: center;
+        
+      }
+
+      .toolbar > .group {
+        display: flex;
+        
+        align-items: center;
+        margin: 0 10px;
+      }
+
       #cloudComputerDiv {
         position: fixed;
         inset: 0;
@@ -13,27 +32,33 @@
 
   <body>
     <div>
-      <div style="font-family: sans-serif">
-        Zoom:
-        <input
-          type="range"
-          name="zoom"
-          id="zoom"
-          min="0.1"
-          max="2"
-          value="1"
-          step="0.1"
-        />
-        <input
-          type="radio"
-          id="radio-origin"
-          name="scope"
-          value="per-origin"
-          checked
-        />
-        <label for="radio-origin">per-origin</label>
-        <input type="radio" id="radio-tab" name="scope" value="per-tab" />
-        <label for="radio-tab">per-tab</label><br />
+      <div class="toolbar">
+        <div class="group">
+          Zoom:
+          <input
+            type="range"
+            name="zoom"
+            id="zoom"
+            min="0.1"
+            max="2"
+            value="1"
+            step="0.1"
+          />
+        </div>
+        <div class="group">
+          <input
+            type="radio"
+            id="radio-origin"
+            name="scope"
+            value="per-origin"
+            checked
+          />
+          <label for="radio-origin">per-origin</label>
+        </div>
+        <div class="group">
+          <input type="radio" id="radio-tab" name="scope" value="per-tab" />
+          <label for="radio-tab">per-tab</label>
+        </div>
       </div>
       <div id="cloudComputerDiv"></div>
     </div>
