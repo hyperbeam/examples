@@ -6,15 +6,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Hyperbeam Persistence Example</title>
     <style>
+      body {
+        font-family: sans-serif;
+      }
+
       .box {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin: 10px;
+        border-radius: 10px;
+        background-color: rgba(0, 0, 0, 0.1);
         width: 100px;
         height: 100px;
-        border: 1px solid #000;
-        display: inline-block;
-        margin: 10px;
         vertical-align: top;
         cursor: pointer;
       }
+
       .hidden {
         display: none;
       }
@@ -22,7 +30,9 @@
   </head>
   <body>
     <div id="menu" class="hidden">
-      <div id="new-computer" class="box"><p>Create new</p></div>
+      <div id="new-computer" class="box">
+        <p>Create new</p>
+      </div>
     </div>
     <div id="computer-page" class="hidden">
       <button id="exit-btn">Save and exit</button>
