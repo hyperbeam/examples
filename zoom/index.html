@@ -2,6 +2,13 @@
 <html>
   <head>
     <title>Hyperbeam AudioContext example</title>
+    <style>
+      #cloudComputerDiv {
+        position: fixed;
+        inset: 0;
+        top: 50px;
+      }
+    </style>
   </head>
 
   <body>
@@ -29,7 +36,7 @@
           <label for="radio-tab">per-tab</label><br />
         </form>
       </div>
-      <div id="cloudComputerDiv" style="height: 720px; width: 1280px"></div>
+      <div id="cloudComputerDiv"></div>
     </div>
     <script type="module">
       import Hyperbeam from "https://unpkg.com/@hyperbeam/web@latest/dist/index.js";
