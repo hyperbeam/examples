@@ -32,6 +32,6 @@ Replace `your_api_key` with your API key from the [Hyperbeam dashboard](https://
 
 - [**Chrome Extension**](./chrome-extension) <br> Upload and use a custon Chrome extension in the browser.
 
-- [**Timeout**](./timeout) <br> Set offline, inactive and absolute timeouts for the browser session.
+- [**Timeout**](./timeout) <br> Bring down costs and add quickly add paywalls using timeouts.
 
 - [**Audio Context**](./audio-context) <br> Use the AudioContext API to customize the audio output of the browser.
