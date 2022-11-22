@@ -46,7 +46,7 @@
 
   <body>
     <div>
-      <button id="stop-cursor">Stop sending cursor events</button>
+      <button id="cursor-events-toggle">Stop sending cursor events</button>
     </div>
     <div id="hb-mini-container"></div>
     <div id="hb-large-container"></div>
@@ -74,7 +74,9 @@
       import Hyperbeam from "https://unpkg.com/@hyperbeam/web@latest/dist/index.js";
 
       const cursorNode = document.querySelector(".cursor");
-      const stopCursorEvents = document.getElementById("stop-cursor");
+      const cursorEventsToggle = document.getElementById(
+        "cursor-events-toggle"
+      );
       const largeContainer = document.getElementById("hb-large-container");
       const miniContainer = document.getElementById("hb-mini-container");
 
@@ -91,13 +93,14 @@
         const rect = container.getBoundingClientRect();
         const cursors = new Map();
         let cursorOn = true;
-        stopCursorEvents.addEventListener("click", () => {
+
+        cursorEventsToggle.addEventListener("click", () => {
           if (cursorOn) {
-            stopCursorEvents.innerText = "Start sending cursor events";
+            cursorEventsToggle.innerText = "Start sending cursor events";
             disableInput(container);
             cursorOn = false;
           } else {
-            stopCursorEvents.innerText = "Stop sending cursor events";
+            cursorEventsToggle.innerText = "Stop sending cursor events";
             enableInput(container);
             cursorOn = true;
           }
