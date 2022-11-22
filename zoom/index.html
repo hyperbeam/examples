@@ -50,15 +50,18 @@
 
         const zoomFactor = await hb.tabs.getZoom();
         zoomInput.value = zoomFactor;
+
         const zoomSettings = await hb.tabs.getZoomSettings();
         updateZoomScope(zoomSettings.scope);
 
         for (const radioBtn of radioBtns) {
           radioBtn.addEventListener("change", setZoomScope);
         }
+
         zoomInput.addEventListener("input", (e) => {
           hb.tabs.setZoom(Number(e.target.value));
         });
+
         // Note this function may fire for tabs that are not activated
         // You should check if the tabIds match
         hb.tabs.onZoomChange.addListener((info) => {
@@ -67,6 +70,7 @@
             updateZoomScope(info.zoomSettings.scope);
           }
         });
+
         // Note that each tab can have different zoom values and settings
         hb.tabs.onActivated.addListener(async (info) => {
           tabId = info.tabId;
