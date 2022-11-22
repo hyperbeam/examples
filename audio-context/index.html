@@ -2,24 +2,61 @@
 <html>
   <head>
     <title>Hyperbeam AudioContext example</title>
+    <style>
+      body {
+        font-family: sans-serif;
+      }
+
+      /* #cloudComputerDiv {
+        height: 720px;
+        width: 1280px;
+      } */
+
+      #cloudComputerDiv {
+        position: fixed;
+        inset: 0;
+        top: 50px;
+      }
+
+      .toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .toolbar > .group {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 10px;
+      }
+    </style>
   </head>
 
   <body>
     <div>
-      <div style="font-family: sans-serif">
-        Volume:
-        <input
-          type="range"
-          id="volumeSlider"
-          min="0"
-          max="2"
-          value="1"
-          step="0.01"
-        />
-        Reverb: <input type="checkbox" id="reverbToggle" /> Noise:
-        <input type="checkbox" id="noiseToggle" />
+      <div class="toolbar">
+        <div class="group">
+          Volume:
+          <input
+            type="range"
+            id="volumeSlider"
+            min="0"
+            max="2"
+            value="1"
+            step="0.1"
+          />
+        </div>
+        <div class="group">
+          <input type="checkbox" id="reverbToggle" />
+          <label for="reverbToggle">Reverb</label>
+        </div>
+        <div class="group">
+          <input type="checkbox" id="noiseToggle" />
+          <label for="noiseToggle">Noise</label>
+        </div>
       </div>
-      <div id="cloudComputerDiv" style="height: 720px; width: 1280px"></div>
+      <div id="cloudComputerDiv"></div>
     </div>
     <script type="module">
       import Hyperbeam from "https://unpkg.com/@hyperbeam/web@latest/dist/index.js";
