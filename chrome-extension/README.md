@@ -67,6 +67,8 @@ npm run start
 
 Then, visit <http://localhost:8080>.
 
+Alternatively, run `npm run script` to run `script.sh`, which starts a virtual computer with the Chrome extension using `curl`.
+
 ## Need more help?
 
 Send us an email at [founders@hyperbeam.com](mailto:founders@hyperbeam.com) or join our community [Discord server](https://discord.gg/D78RsGfQjq).
