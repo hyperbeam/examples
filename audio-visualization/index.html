@@ -94,15 +94,6 @@
         });
         resizeObserver.observe(video);
 
-        function setCanvasSize() {
-          canvas.width = window.innerWidth;
-          canvas.height = window.innerHeight;
-        }
-        setCanvasSize();
-        window.addEventListener("resize", () => {
-          setCanvasSize();
-        });
-
         function draw() {
           requestAnimationFrame(draw);
 
