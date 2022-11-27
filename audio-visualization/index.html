@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🔉 Audio Visualization Example</title>
+    <style>
+      #hb-container {
+        position: absolute;
+        inset: 0;
+      }
+
+      #canvas {
+        position: absolute;
+        z-index: 1;
+        pointer-events: none;
+      }
+
+      #controls {
+        position: absolute;
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="hb-container"></div>
+    <canvas id="canvas"></canvas>
+    <div id="controls">
+      <label for="fftsize">fftsize</label>
+      <input
+        type="range"
+        name="fftsize"
+        id="fftsize"
+        min="5"
+        max="15"
+        value="10"
+      />
+    </div>
+    <script type="module">
+      import Hyperbeam from "https://unpkg.com/@hyperbeam/web@latest/dist/index.js";
+
+      async function main() {
+        const res = await fetch("/computer");
+        const { embed_url } = await res.json();
+
+        const hbContainer = document.getElementById("hb-container");
+
+        const audioCtx = new AudioContext();
+
+        const analyser = audioCtx.createAnalyser();
+
+        const fftSizeInput = document.getElementById("fftsize");
+        analyser.fftSize = 2 ** fftSizeInput.value;
+        let bufferLength = analyser.frequencyBinCount;
+        let dataArray = new Uint8Array(bufferLength);
+        fftSizeInput.addEventListener("input", (e) => {
+          analyser.fftSize = 2 ** e.target.value;
+          bufferLength = analyser.frequencyBinCount;
+          dataArray = new Uint8Array(bufferLength);
+        });
+
+        analyser.connect(audioCtx.destination);
+
+        window.addEventListener("click", () => {
+          if (audioCtx.state === "suspended") {
+            audioCtx.resume();
+            console.log("Resuming audio context");
+          }
+        });
+
+        const hb = await Hyperbeam(hbContainer, embed_url, {
+          audioTrackCb: (audioTrack) => {
+            const source = audioCtx.createMediaStreamSource(
+              new MediaStream([audioTrack])
+            );
+            source.connect(analyser);
+          },
+        });
+
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+
+        const video = hbContainer.shadowRoot.querySelector("video");
+
+        // Resize canvas to match video and position it on top of it
+        const resizeObserver = new ResizeObserver(() => {
+          canvas.width = video.offsetWidth;
+          canvas.height = video.offsetHeight;
+          canvas.style.top = `${video.offsetTop}px`;
+          canvas.style.left = `${video.offsetLeft}px`;
+        });
+        resizeObserver.observe(video);
+
+        function setCanvasSize() {
+          canvas.width = window.innerWidth;
+          canvas.height = window.innerHeight;
+        }
+        setCanvasSize();
+        window.addEventListener("resize", () => {
+          setCanvasSize();
+        });
+
+        function draw() {
+          requestAnimationFrame(draw);
+
+          analyser.getByteFrequencyData(dataArray);
+
+          // Clear the canvas
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+          const barWidth = (canvas.width / bufferLength) * 2.5;
+          let barHeight;
+          let x = 0;
+          for (let i = 0; i < bufferLength; i++) {
+            barHeight = dataArray[i] ** 4 * 0.00000005;
+            ctx.fillStyle = "rgb(" + (barHeight + 100) + ",50,50)";
+            ctx.fillRect(
+              x,
+              canvas.height - barHeight / 2,
+              barWidth,
+              barHeight / 2
+            );
+            x += barWidth + 1;
+          }
+        }
+        draw();
+      }
+
+      main();
+    </script>
+  </body>
+</html>
