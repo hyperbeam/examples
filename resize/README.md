@@ -12,10 +12,10 @@ The `resize` method allows you to resize and reposition the browser window dynam
 
 // Client
 const hb = await Hyperbeam(container, embedUrl);
-hb.resize({
-  width: // width in pixels
-  height: // height in pixels
-});
+hb.resize(
+  width, // width in pixels
+  height // height in pixels
+);
 
 ```
 
