@@ -6,5 +6,5 @@ curl -X POST \
   -H "Authorization: Bearer $HB_API_KEY" \
   -H 'Content-Type: multipart/form-data' \
   https://engine.hyperbeam.com/v0/vm \
-  --form 'body={"ublock":true,"timeout":{"offline": 60},"extension":{"field":"ex"}}' \
+  --form 'body={"timeout":{"offline": 60},"extension":{"field":"ex"}}' \
   --form "ex=@$(pwd)/extension.zip;type=application/zip"
