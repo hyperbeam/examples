@@ -9,15 +9,13 @@ Specifying the `audioTrackCb` option when creating a browser allows you to custo
 ## Usage
 
 ```ts
-
 // Client
 const hb = await Hyperbeam(computer_div, embed_url, {
- audioTrackCb: (track: MediaStreamTrack) => {
-  // Create a Media Stream and more
-  // https://developer.mozilla.org/en-US/docs/Web/API/Media_Capture_and_Streams_API
- }
+  audioTrackCb: (track: MediaStreamTrack) => {
+    // Create a Media Stream and more
+    // https://developer.mozilla.org/en-US/docs/Web/API/Media_Capture_and_Streams_API
+  },
 });
-
 ```
 
 ## Steps

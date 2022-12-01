@@ -9,14 +9,12 @@ Multi-cursor is a feature that allows multiple users to control the browser simu
 ## Usage
 
 ```ts
-
 // Client
 const hb = await Hyperbeam(container, embedUrl, {
- onCursor({ x, y, userId }) {
-  // Render the cursor on the screen
- },
+  onCursor({ x, y, userId }) {
+    // Render the cursor on the screen
+  },
 });
-
 ```
 
 ## Steps

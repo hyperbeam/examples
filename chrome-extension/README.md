@@ -11,7 +11,6 @@ In this example, we'll be loading the "Hello Extensions" extension in the Hyperb
 ## Usage
 
 ```ts
-
 // Server
 
 // Create a form data object with the extension zip file
@@ -24,12 +23,9 @@ const headers = formData.getHeaders();
 headers["Authorization"] = `Bearer ${process.env.HB_API_KEY}`;
 
 // Send a POST request to the Hyperbeam API with the form data
-const response = await post(
- "https://engine.hyperbeam.com/v0/vm",
- formData,
- { headers }
-);
-
+const response = await post("https://engine.hyperbeam.com/v0/vm", formData, {
+  headers,
+});
 ```
 
 ## Steps

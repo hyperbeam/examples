@@ -26,7 +26,7 @@ app.get("/computer", async (req, res) => {
     hide_cursor: true,
     width: width ? ~~width : 1280,
     height: height ? ~~height : 720,
-    max_area: 1280*720
+    max_area: 1280 * 720,
   };
   const resp = await axios.post(
     "https://engine.hyperbeam.com/v0/vm",

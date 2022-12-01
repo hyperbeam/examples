@@ -9,7 +9,6 @@ The Hyperbeam API lets you specify absolute, inactive and offine timeouts for yo
 ## Usage
 
 ```ts
-
 // Server
 const response = await axios.post(
   "https://engine.hyperbeam.com/v0/vm",
@@ -26,8 +25,7 @@ const response = await axios.post(
     },
   },
   { headers }
-  );
-
+);
 ```
 
 ## Steps
