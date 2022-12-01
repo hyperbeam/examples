@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Hyperbeam Webhook Auth Example</title>
+  </head>
+  <body>
+    <div id="hyperbeam-container" style="height: 720px; width: 1280px"></div>
+    <div id="logs"></div>
+    <script type="module">
+      import Hyperbeam from "https://unpkg.com/@hyperbeam/web@latest/dist/index.js";
+      const container = document.getElementById("hyperbeam-container");
+
+      const resp = await fetch("/computer");
+      const data = await resp.json();
+      const hb = await Hyperbeam(container, data.embed_url, {
+        webhookUserdata: {
+          token: data.webhook_token,
+        },
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Hyperbeam Troubleshooting Example</title>
+    <style>
+      #logs {
+        width: 398px;
+        height: 718px;
+        margin-left: 5px;
+        display: inline-block;
+        overflow-y: auto;
+        border: 1px solid #000;
+      }
+      #hyperbeam-container {
+        display: inline-block;
+      }
+    </style>
+  </head>
+  <body>
+    <div style="font-family: sans-serif">
+      <button id="reconnect-btn">Reconnect</button>
+    </div>
+    <div id="hyperbeam-container" style="height: 720px; width: 1280px"></div>
+    <div id="logs"></div>
+    <script type="module">
+      import Hyperbeam from "https://unpkg.com/@hyperbeam/web@latest/dist/index.js";
+      const container = document.getElementById("hyperbeam-container");
+      const reconnectBtn = document.getElementById("reconnect-btn");
+      const logs = document.getElementById("logs");
+
+      const resp = await fetch("/computer");
+      const data = await resp.json();
+      const hb = await Hyperbeam(container, data.embed_url, {
+        onConnectionStateChange({ state }) {
+          const p = document.createElement("p");
+          p.innerText = `CONNECTION STATE: ${state}`;
+          logs.appendChild(p);
+        },
+      });
+      reconnectBtn.addEventListener("click", () => {
+        hb.reconnect();
+      });
+    </script>
+  </body>
+</html>
