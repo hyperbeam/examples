@@ -84,7 +84,9 @@ function listen(webhookUrl, bearer) {
     }
     console.log(`user_id=${user_id} connected`);
     tokens.delete(userdata.token);
-    res.sendStatus(200);
+    res.json({
+      authorized: true
+    });
   });
 
   app.listen(port, () => {
