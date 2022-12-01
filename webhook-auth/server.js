@@ -37,6 +37,9 @@ function listen(webhookUrl, bearer) {
     }
     const settings = {
       ublock: true,
+      timeout: {
+        offline: 10
+      },
       auth: {
         type: "webhook",
         value: {
