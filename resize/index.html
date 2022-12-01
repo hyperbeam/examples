@@ -178,7 +178,7 @@
                 const desiredHeight = event.rect.height;
                 const pixels = Math.min(
                   desiredWidth * desiredHeight,
-                  hb.initialWidth * hb.initialHeight
+                  hb.maxArea
                 );
                 const aspectRatio = desiredWidth / desiredHeight;
                 const height = Math.floor(Math.sqrt(pixels / aspectRatio));
