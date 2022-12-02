@@ -64,7 +64,7 @@ function listen(webhookUrl, bearer) {
       `user_id=${user_id} attempting to connect with token ${userdata.token}`
     );
     console.log(
-      `UA=${req.get("User-Agent")}, client IP=${req.get("X-Real-IP")}`
+      `UA=${req.get("HB-User-Agent")}, client IP=${req.get("HB-Connecting-IP")}`
     );
     if (!tokens.has(userdata.token)) {
       console.log(`Unknown userdata token ${userdata.token}`);
