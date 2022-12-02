@@ -8,7 +8,6 @@ const localtunnel = require("localtunnel");
 const app = express();
 const port = 8080;
 let computer;
-let hasPremium = false;
 
 function updateComputerTimeout(comp, timeout) {
   const headers = {
@@ -58,10 +57,7 @@ function listen(webhookUrl, bearer) {
     );
     computer = resp.data;
     computer["webhook_token"] = webhookToken;
-    res.send({
-      hasPremium,
-      computer,
-    });
+    res.send(computer);
   });
 
   app.post("/webhook", async (req, res) => {
@@ -84,7 +80,7 @@ function listen(webhookUrl, bearer) {
     }
     console.log(`user_id=${user_id} connected`);
     tokens.delete(userdata.token);
-    res.json({
+    res.send({
       authorized: true
     });
   });
