@@ -9,14 +9,6 @@ const app = express();
 const port = 8080;
 let computer;
 
-function updateComputerTimeout(comp, timeout) {
-  const headers = {
-    Authorization: `Bearer ${comp.admin_token}`,
-  };
-  const computerBaseUrl = comp.embed_url.split("?")[0];
-  return axios.post(`${computerBaseUrl}/timeout`, timeout, { headers });
-}
-
 function listen(webhookUrl, bearer) {
   const tokens = new Set();
 
