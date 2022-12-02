@@ -107,28 +107,12 @@
         });
 
         const hb = await Hyperbeam(container, embedUrl, {
-          onCursor({ x, y, userId }) {
+          onCursor({ clientX, clientY, userId }) {
             if (!cursors.has(userId)) {
               newCursor(userId, cursors);
             }
-            // The container's width and height may not match Hyperbeam's dimensions,
-            // so we need to compute Hyperbeam's dimensions and apply an offset
-            const hbAspectRatio = hb.width / hb.height;
-            const hbOffsetWidth =
-              container.offsetWidth > container.offsetHeight
-                ? container.offsetHeight * hbAspectRatio
-                : container.offsetWidth;
-            const hbOffsetHeight = hbOffsetWidth / hbAspectRatio;
             const updateCursor = cursors.get(userId);
-            const position = [
-              hbOffsetWidth * x +
-                rect.left +
-                (container.offsetWidth - hbOffsetWidth) / 2,
-              hbOffsetHeight * y +
-                rect.top +
-                (container.offsetHeight - hbOffsetHeight) / 2,
-            ];
-            updateCursor(position);
+            updateCursor([clientX, clientY]);
           },
         });
       }
