@@ -1,0 +1,17 @@
+{
+  "name": "Hyperbeam in Extension",
+  "description": "Configuring CSP for Hyperbeam in a Chrome extension",
+  "version": "1.0",
+  "manifest_version": 3,
+  "content_security_policy": {
+    "sandbox": "sandbox allow-scripts; default-src 'self'; script-src-elem 'self' blob:; style-src-elem 'self' blob:; connect-src http://localhost:8080 https://*.hyperbeam.com wss://*.hyperbeam.com"
+  },
+  "sandbox": {
+    "pages": ["index.html"]
+  },
+  "permissions": ["tabs"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {}
+}

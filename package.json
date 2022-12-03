@@ -17,11 +17,15 @@
   "workspaces": [
     "audio-context",
     "audio-visualization",
-    "chrome-extension",
+    "content-security-policy",
+    "embed-in-chrome-extension",
+    "load-custom-chrome-extension",
     "multicursor",
     "persistence",
     "resize",
     "timeout",
+    "troubleshooting",
+    "webhook-auth",
     "zoom"
   ],
   "keywords": [],

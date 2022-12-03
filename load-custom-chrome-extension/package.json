@@ -1,5 +1,5 @@
 {
-  "name": "chrome-extension",
+  "name": "load-custom-chrome-extension",
   "version": "1.0.0",
   "description": "",
   "main": "server.js",

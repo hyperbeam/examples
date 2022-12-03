@@ -1,0 +1,1 @@
+../node_modules/@hyperbeam/web/dist/index.js
