@@ -29,7 +29,7 @@ function listen(webhookUrl, bearer) {
     const settings = {
       ublock: true,
       timeout: {
-        offline: 10
+        offline: 10,
       },
       auth: {
         type: "webhook",
@@ -73,7 +73,7 @@ function listen(webhookUrl, bearer) {
     console.log(`user_id=${user_id} connected`);
     tokens.delete(userdata.token);
     res.send({
-      authorized: true
+      authorized: true,
     });
   });
 
