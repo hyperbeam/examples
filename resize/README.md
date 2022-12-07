@@ -2,6 +2,8 @@
 
 Resize and reposition the browser window dynamically.
 
+https://user-images.githubusercontent.com/10488070/206273355-c722a7af-32bb-4f31-b463-a521697d18a7.mp4
+
 ## What is this useful for?
 
 The `resize` method allows you to resize and reposition the browser window dynamically. This is useful for creating responsive web apps, testing responsive designs across multiple devices, or creating a custom sized browser window for your app.
