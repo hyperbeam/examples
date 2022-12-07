@@ -2,6 +2,8 @@
 
 Resize and reposition the browser window dynamically.
 
+![Hyperbeam Resize Example](https://i.imgur.com/0E0qKNn.gifv)
+
 ## What is this useful for?
 
 The `resize` method allows you to resize and reposition the browser window dynamically. This is useful for creating responsive web apps, testing responsive designs across multiple devices, or creating a custom sized browser window for your app.
