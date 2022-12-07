@@ -2,7 +2,7 @@
 
 Resize and reposition the browser window dynamically.
 
-![Hyperbeam Resize Example](https://i.imgur.com/0E0qKNn.gifv)
+https://user-images.githubusercontent.com/10488070/206273355-c722a7af-32bb-4f31-b463-a521697d18a7.mp4
 
 ## What is this useful for?
 
