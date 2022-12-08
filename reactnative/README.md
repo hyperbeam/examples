@@ -2,6 +2,9 @@
 
 This is a simple example of how to use Hyperbeam in a React Native app.
 
+> **Note** <br>
+> iOS hasn't been tested yet, but in theory it should work. 
+
 ## Setup
 
 1. Clone this repo
