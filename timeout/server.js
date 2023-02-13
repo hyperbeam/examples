@@ -30,8 +30,8 @@ function listen(webhookUrl, bearer) {
     if (computer) {
       try {
         await updateComputerTimeout(computer, {
-          offline: 30,
-          inactive: 60,
+          offline: 30,  // 30 seconds
+          inactive: 60, // 60 seconds
           absolute: 60 * 60 * 2, // null // set the value to "null" to eliminate the timeout
         });
       } catch (e) {
@@ -47,9 +47,9 @@ function listen(webhookUrl, bearer) {
     if (computer) {
       try {
         await updateComputerTimeout(computer, {
-          offline: 10,
-          inactive: 30,
-          absolute: 60,
+          offline: 10,  // 10 seconds
+          inactive: 30, // 30 seconds
+          absolute: 60, // 60 seconds
           reset: false,
         });
       } catch (e) {
@@ -67,11 +67,13 @@ function listen(webhookUrl, bearer) {
     }
     const settings = {
       ublock: true,
+      // Timeout values are in seconds
+      // In this example, we pick low values so you can quickly see the timeouts in action
       timeout: {
-        offline: 10,
-        inactive: 30,
-        absolute: 60,
-        warning: 15,
+        offline: 10,  // 10 seconds
+        inactive: 30, // 30 seconds
+        absolute: 60, // 60 seconds
+        warning: 15,  // 15 seconds
         webhook: {
           url: webhookUrl,
           bearer,
