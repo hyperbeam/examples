@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script type="module">
+            import Hyperbeam from "https://unpkg.com/@hyperbeam/web@latest/dist/index.js"
+            
+            const msgBox = document.getElementById("messagebox");
+            const hbStream = await Hyperbeam(document.getElementById("hyperbeam-div"), "<embed-url>", {
+                extension: {
+                    onMessage: extMessage
+                }
+            });
+
+            async function extMessage(msg) {
+                msgBox.value = msg;
+            }
+
+            msgBox.addEventListener("input", event => {
+                if (hbStream) {
+                    hbStream.extension.send(event.target.value);
+                }
+            });
+        </script>
+    </head>
+    <body>
+        <label for="messagebox">Talk to the VM Here!</label>
+        <input type="text" id="messagebox">
+        <div id="hyperbeam-div"></div>
+    </body>
+</html>

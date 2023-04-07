@@ -1,0 +1,13 @@
+{
+    "Name": "Hyperbeam Bi-Directional Example",
+    "version": "1.0.0",
+    "description": "An Example extension to show off the hyperbeam bi-directional api",
+    "manifest_version": 2,
+    "permissions": [
+        "nativeMessaging",
+        "scripting"
+    ],
+    "page_action": {
+        "default_popup": "index.html"
+    }
+}
