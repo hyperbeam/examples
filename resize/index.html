@@ -25,7 +25,7 @@
         background-color: rgb(0, 127, 239, 0.2);
         border: 2px solid rgb(0, 127, 239, 0.2);
         display: inline-block;
-        box-sizing: border-box;
+        box-sizing: content-box;
         position: relative;
       }
 
@@ -117,17 +117,14 @@
         let baseUrl = "/computer";
         if (initWidth && initHeight) {
           baseUrl += `?width=${initWidth}&height=${initHeight}`;
-          container.style.width = `${initWidth}px`;
-          container.style.height = `${initHeight}px`;
-        } else {
-          container.style.width = "1280px";
-          container.style.height = "720px";
         }
-        container.classList.remove("hidden");
 
         const resp = await fetch(baseUrl);
         const data = await resp.json();
         const hb = await Hyperbeam(cloudComputerDiv, data.embed_url);
+        container.style.width = `${hb.width}px`;
+        container.style.height = `${hb.height}px`;
+        container.classList.remove("hidden");
         lock.addEventListener("click", disableInteractives);
         unlock.addEventListener("click", () => enableInteractives(hb));
         enableInteractives(hb);
