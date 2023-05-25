@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Hyperbeam Recording Example</title>
+    <style>
+      #virtual-browser {
+        display: inline-block;
+        border: 1px solid #000;
+        margin-top: 10px;
+      }
+      #result {
+        font-family: Arial, sans-serif;
+      }
+      #vid2 {
+        width: 1280px;
+        height: 720px;
+      }
+    </style>
+  </head>
+  <body>
+    <button id="record-btn">Start recording</button>
+    <span id="result"></span><br>
+    <div id="virtual-browser"></div>
+    <video id="vid2"></video>
+    <script type="module">
+      import Hyperbeam from "https://unpkg.com/@hyperbeam/web@latest/dist/index.js";
+
+      function initRecorder(vid) {
+        const stream = vid.captureStream()
+        console.log(stream, stream.getAudioTracks(), stream.getVideoTracks())
+        const recorder = new MediaRecorder(stream);
+        const recordBtn = document.getElementById("record-btn")
+        const resultSpan = document.getElementById("result")
+
+        let videoData = []
+
+        recorder.ondataavailable = (e) => {
+          videoData.push(e.data)
+        }
+
+        recorder.onstop = async (e) => {
+          // See https://developer.mozilla.org/en-US/docs/Web/API/Blob/Blob
+          // to learn more about file type options
+          const blob = new Blob(videoData, {"type": "video/webm"})
+          const resp = await fetch("/video", {
+            method: "POST",
+            headers: {
+              "Content-Type": blob.type
+            },
+            body: blob
+          })
+          videoData = []
+          const data = await resp.json()
+          resultSpan.innerText = `Video written to data/${data.filename}`
+        }
+
+        recordBtn.addEventListener("click", () => {
+          if (recorder.state === "recording") {
+            recorder.stop()
+            recordBtn.innerText = "Start recording"
+          } else {
+            recorder.start()
+            recordBtn.innerText = "Stop recording"
+          }
+        })
+      }
+
+      async function main() {
+        const vbDiv = document.getElementById("virtual-browser")
+        let videoData = []
+
+        const resp = await fetch("/computer");
+        const data = await resp.json();
+        const hb = await Hyperbeam(vbDiv, data.embed_url);
+        const vid = vbDiv.shadowRoot.getElementById("vid");
+        vid.addEventListener("play", () => {
+          initRecorder(vid)
+        })
+      }
+
+      main();
+    </script>
+  </body>
+</html>
