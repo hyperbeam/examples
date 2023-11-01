@@ -11,11 +11,9 @@ Persistence is a feature that allows you to save and access browser data across 
 ```ts
 
 // Server
+const myProfileId = "..." // The session ID from the previous saved session
 const response = await axios.post("https://engine.hyperbeam.com/v0/vm", {
-  profile: {
-    load: // previously saved session ID to load
-    save: // session ID to save the session as
-  }
+  profile: myProfileId //  Pass the session ID to load the session and overwrite it when the session is over
 }, { headers });
 
 ```
