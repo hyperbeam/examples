@@ -52,23 +52,18 @@ app.post("/computer/stop", async (req, res) => {
 
 app.get("/computer", async (req, res) => {
   let { session_id } = req.query;
-  let load;
-  let save = true;
+  let profile = true;
   if (session_id) {
     try {
       await db.get(session_id);
-      load = session_id;
-      save = session_id;
+      profile = session_id;
     } catch (e) {
       res.status(400);
       return;
     }
   }
   const settings = {
-    profile: {
-      load,
-      save,
-    },
+    profile,
     timeout: {
       offline: 10,
     },
