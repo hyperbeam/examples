@@ -4,20 +4,40 @@ Save and access browser data across multiple sessions.
 
 ## What is this useful for?
 
-Persistence is a feature that allows you to save and access browser data across multiple sessions. This is useful for preserving logins, bookmarks, user data, cookies, local storage, etc. across multiple sessions.
+Persistence is a feature that allows you to save and access browser data across multiple sessions. This is useful for preserving logins, bookmarks, user data, cookies, local storage, etc. across multiple sessions. A saved session is called a "profile" and is identified by the ID of the session that it was initially saved from. Profiles are only saved when the session is closed.
 
 ## Usage
 
-```ts
+```js
+// save the session when it's closed to a new profile
+let profile = true
 
-// Server
-const response = await axios.post("https://engine.hyperbeam.com/v0/vm", {
-  profile: {
-    load: // previously saved session ID to load
-    save: // session ID to save the session as
-  }
+let response = await axios.post("https://engine.hyperbeam.com/v0/vm", {
+  profile,
 }, { headers });
 
+// close session
+await axios.delete(`https://engine.hyperbeam.com/v0/vm/${response.session_id}`)
+
+// the profile ID is the session ID of the intially saved session
+const profile_id = response.session_id
+
+// simple usage:
+// load from and save to existing profile
+profile = profile_id
+
+// or
+// advanced usage:
+// "fork" a profile: load from existing profile but save to new profile
+// the new session's ID is the forked profile ID
+profile = {
+  load: profile_id,
+  save: true,
+}
+
+response = await axios.post("https://engine.hyperbeam.com/v0/vm", {
+  profile,
+}, { headers });
 ```
 
 ## Steps
