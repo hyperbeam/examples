@@ -17,7 +17,6 @@ app.get("/computer", async (req, res) => {
   const roles = [
     "control",
     "clipboard_copy",
-    "programmatic_navigation",
     "cursor_data",
   ];
   const hbConfig = {
