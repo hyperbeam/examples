@@ -30,7 +30,7 @@ Replace `your_api_key` with your API key from the [Hyperbeam dashboard](https://
 
 - [**Zoom**](./zoom) <br> Zoom in and out of all tabs or individual ones.
 
-- [**Chrome Extension**](./chrome-extension) <br> Upload and use a custon Chrome extension in the browser.
+- [**Chrome Extension**](./chrome-extension) <br> Upload and use a custom Chrome extension in the browser.
 
 - [**Timeout**](./timeout) <br> Bring down costs and add quickly add paywalls using timeouts.
 
