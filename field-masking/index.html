@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Hyperbeam Field-masking Example</title>
+    <style>
+      #hyperbeam-container {
+        display: inline-block;
+      }
+    </style>
+  </head>
+  <body>
+    <div style="font-family: sans-serif">
+      <button id="field-masking-btn">Show field-masking input</button>
+    </div>
+    <div id="hyperbeam-container" style="height: 720px; width: 1280px"></div>
+    <script type="module">
+      import Hyperbeam from "https://unpkg.com/@hyperbeam/web@latest/dist/index.js";
+      const container = document.getElementById("hyperbeam-container");
+      const fieldMaskingBtn = document.getElementById("field-masking-btn");
+      const logs = document.getElementById("logs");
+
+      const resp = await fetch("/computer");
+      const data = await resp.json();
+      const hb = await Hyperbeam(container, data.embed_url);
+      fieldMaskingBtn.addEventListener("click", async () => {
+        fieldMaskingBtn.disabled = true;
+        if (fieldMaskingBtn.innerText.startsWith("Show")) {
+          await toggleMask(true)
+          fieldMaskingBtn.disabled = false;
+          fieldMaskingBtn.innerText = "Hide field-masking input";
+        } else {
+          await toggleMask(false);
+          fieldMaskingBtn.disabled = false;
+          fieldMaskingBtn.innerText = "Show field-masking input";
+        }
+      });
+
+      function toggleMask(add) {
+        return fetch("/mask", {
+          method: add ? "POST" : "DELETE",
+          body: JSON.stringify({ userId: hb.userId }),
+          headers: {
+            "Content-Type": "application/json"
+          }
+        });
+      }
+    </script>
+  </body>
+</html>
