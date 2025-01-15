@@ -180,7 +180,9 @@
                 const aspectRatio = desiredWidth / desiredHeight;
                 const height = Math.floor(Math.sqrt(pixels / aspectRatio));
                 const width = Math.floor(height * aspectRatio);
-                hb.resize(width, height);
+                try {
+                  hb.resize(width, height);
+                } catch {}
                 localStorage.setItem("width", width.toString());
                 localStorage.setItem("height", height.toString());
                 target.style.width = desiredWidth;
