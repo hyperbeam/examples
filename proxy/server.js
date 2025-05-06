@@ -8,7 +8,7 @@ const pacPassword = "<password>"
 const vmConfig = {
   offline_timeout: 300,
   http_proxy: {
-    "pac": `function FindProxyForURL(url, host) {return {'PROXY ${pacIP}'}`,
+    "pac": `function FindProxyForURL(url, host) {return 'PROXY ${pacIP}'}`,
     "username": pacUsername,
     "password": pacPassword
   },
