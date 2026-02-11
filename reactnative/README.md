@@ -1,9 +1,9 @@
-# Hyperbeam React Native example
+# React Native
 
-This is a simple example of how to use Hyperbeam in a React Native app.
+Use Hyperbeam virtual computer in a React Native app.
 
 > **Note** <br>
-> iOS hasn't been tested yet, but in theory it should work. 
+> iOS hasn't been tested yet, but in theory it should work.
 
 ## Setup
 
@@ -35,4 +35,4 @@ See [this issue](https://expo.canny.io/feature-requests/p/support-running-debugg
 
 ## Need more help?
 
-Send us an email at [founders@hyperbeam.com](mailto:founders@hyperbeam.com) or join our community [Discord server](https://discord.gg/D78RsGfQjq).
+Send us an email at [support@hyperbeam.com](mailto:support@hyperbeam.com) or join our developer community [Discord server](https://discord.gg/D78RsGfQjq).

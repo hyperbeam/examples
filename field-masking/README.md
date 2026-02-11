@@ -7,13 +7,10 @@ const hbConfig = {
   field_masking: [
     {
       matches: ["https://hyperbeam.com/*", "https://google.com"],
-      selectors: [
-        "input[type=\"email\"]",
-        "input[type=\"password\"]"
-      ]
-    }
-  ]
-}
+      selectors: ['input[type="email"]', 'input[type="password"]'],
+    },
+  ],
+};
 ```
 
 The snippet above applies field masking to all email and password input fields on google.com (just google.com), and all pages on hyperbeam.com (e.g. hyperbeam.com/foo, hyperbeam.com/bar, etc.).
@@ -41,25 +38,12 @@ const hbConfig = {
 }
 ```
 
-## Running locally
+## Steps
 
-- Use `npm install` to install the dependencies altogether and navigate to the examples you want to run for more information.
-- Set your API key by running the following command in your terminal:
-
-```bash
-# Linux/macOS
-export HB_API_KEY=your_api_key
-
-# Windows
-set HB_API_KEY=your_api_key
-```
-
-Replace `your_api_key` with your API key from the [Hyperbeam dashboard](https://hyperbeam.com/dashboard).
-
-- Run `npm run start`, a server should be listening on port 8080.
-
-- Open <http://localhost:8080> in different tabs or devices. You should be able to see the cursors of other users and control the browser simultaneously.
+- Run `npm start` to launch the demo.
+- You should be able to see the fields with masking enabled.
+- Click the button on the top-left to toggle access to the masked fields.
 
 ## Need more help?
 
-Send us an email at [founders@hyperbeam.com](mailto:founders@hyperbeam.com) or join our community [Discord server](https://discord.gg/D78RsGfQjq).
+Send us an email at [support@hyperbeam.com](mailto:support@hyperbeam.com) or join our developer community [Discord server](https://discord.gg/D78RsGfQjq).

@@ -1,9 +1,12 @@
 import Hyperbeam from "/hb.js";
 
 async function main() {
-  const resp = await fetch("/computer");
+  const resp = await fetch(
+    `/hb?dark=${+matchMedia("(prefers-color-scheme:dark)").matches}`
+  );
   const data = await resp.json();
-  Hyperbeam(document.getElementById("hbContainer"), data.embed_url);
+  const hbContainer = document.getElementById("hbContainer");
+  Hyperbeam(hbContainer, data.embed_url);
 }
 
 main();

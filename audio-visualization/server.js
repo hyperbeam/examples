@@ -1,34 +1,30 @@
-const express = require("express");
-const axios = require("axios");
+import express from "express";
+
+import { baseConfig, fetchHb, launch, listen } from "../util.js";
+
 const app = express();
 
-app.get("/", (req, res) => {
-  res.sendFile(__dirname + "/index.html");
+app.get("/", (_req, res) => {
+  res.sendFile("index.html", { root: import.meta.dirname });
 });
 
-let computer;
+const hbConfig = baseConfig;
 
-// Get a virtual computer object. If no object exists, create it.
-app.get("/computer", async (req, res) => {
-  if (computer) {
-    res.send(computer);
-    return;
-  }
-  const resp = await axios.post(
-    "https://engine.hyperbeam.com/v0/vm",
-    {
-      start_url: "https://youtu.be/0qanF-91aJo",
-      timeout: {
-        offline: 1,
-      },
-      ublock: true,
-    },
-    {
-      headers: { Authorization: `Bearer ${process.env.HB_API_KEY}` },
+// Get a Hyperbeam virtual computer object. If no object exists, create it.
+let hb;
+app.get("/hb", async (req, res) => {
+  try {
+    if (!hb) {
+      hb = await fetchHb({
+        ...hbConfig,
+        dark: req.query["dark"] === "1",
+      });
     }
-  );
-  computer = resp.data;
-  res.send(computer);
+    res.json(hb);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to create Hyperbeam virtual computer" });
+  }
 });
 
-app.listen(8080, () => console.log("Server start at http://localhost:8080"));
+launch(await listen(app, 8080));

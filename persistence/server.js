@@ -1,11 +1,11 @@
-const path = require("path");
-const { Level } = require("level");
-const express = require("express");
-const axios = require("axios");
+import { Level } from "level";
+import express from "express";
 
-const app = express();
+import { baseConfig, fetchHb, launch, listen } from "../util.js";
+
 const db = new Level("data", { valueEncoding: "json" });
 
+const app = express();
 app.use(express.json());
 
 app.get("/sessions", async (req, res) => {
@@ -21,37 +21,49 @@ app.post("/sites", async (req, res) => {
   try {
     await db.get(session_id);
   } catch (e) {
-    res.sendStatus(400);
+    res.status(400).send();
     return;
   }
   await db.put(session_id, {
     session_id,
     sites,
   });
-  res.sendStatus(200);
+  res.status(200).send();
 });
 
-app.post("/computer/stop", async (req, res) => {
+app.post("/hb/stop", async (req, res) => {
   let { session_id } = req.query;
   const headers = {
-    Authorization: `Bearer ${process.env.HB_API_KEY}`,
+    authorization: process.env.HB_API_KEY,
   };
   try {
-    resp = await axios.delete(
+    const resp = await fetch(
       `https://engine.hyperbeam.com/v0/vm/${session_id}`,
-      { headers }
+      {
+        method: "DELETE",
+        headers,
+      }
     );
+
+    if (!resp.ok) {
+      throw new Error(`HTTP error: bad status ${resp.status}`);
+    }
   } catch (e) {
     console.error(e);
     res.status(501);
     res.send({ message: e.message });
     return;
   }
-  res.sendStatus(200);
+  res.status(200).send();
 });
 
-app.get("/computer", async (req, res) => {
-  let { session_id } = req.query;
+const hbConfig = {
+  ...baseConfig,
+  default_roles: [...baseConfig.default_roles, "chrome_apis"],
+};
+
+app.get("/hb", async (req, res) => {
+  let { dark, session_id } = req.query;
   let profile = true;
   if (session_id) {
     try {
@@ -62,20 +74,12 @@ app.get("/computer", async (req, res) => {
       return;
     }
   }
-  const settings = {
-    profile,
-    timeout: {
-      offline: 10,
-    },
-    ublock: true,
-  };
-  const headers = {
-    Authorization: `Bearer ${process.env.HB_API_KEY}`,
-  };
-  let resp;
+  let hb;
   try {
-    resp = await axios.post("https://engine.hyperbeam.com/v0/vm", settings, {
-      headers,
+    hb = await fetchHb({
+      ...hbConfig,
+      dark: dark === "1",
+      profile,
     });
   } catch (e) {
     console.error(e);
@@ -83,19 +87,16 @@ app.get("/computer", async (req, res) => {
     res.send({ message: e.message });
     return;
   }
-  const computer = resp.data;
-  session_id = session_id || computer.session_id;
+  session_id = session_id ?? hb.session_id;
   await db.put(session_id, {
     session_id,
     sites: [],
   });
-  res.send(computer);
+  res.send(hb);
 });
 
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "/index.html"));
+app.get("", (_req, res) => {
+  res.sendFile("index.html", { root: import.meta.dirname });
 });
 
-app.listen(8081, () => {
-  console.log("Server start at http://localhost:8081");
-});
+launch(await listen(app, 8080));

@@ -1,22 +1,28 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
+    <meta charset="UTF-8">
+    <meta name="color-scheme" content="light dark">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="icon" href="data:,">
     <title>Hyperbeam Webhook Auth Example</title>
   </head>
   <body>
     <div id="hyperbeam-container" style="height: 720px; width: 1280px"></div>
     <div id="logs"></div>
     <script type="module">
-      import Hyperbeam from "https://unpkg.com/@hyperbeam/web@latest/dist/index.js";
-      const container = document.getElementById("hyperbeam-container");
+import Hyperbeam from "https://unpkg.com/@hyperbeam/web@latest/dist/index.js";
+const container = document.getElementById("hyperbeam-container");
 
-      const resp = await fetch("/computer");
-      const data = await resp.json();
-      const hb = await Hyperbeam(container, data.embed_url, {
-        webhookUserdata: {
-          token: data.webhook_token,
-        },
-      });
+const resp = await fetch(
+  `/hb?dark=${+matchMedia("(prefers-color-scheme:dark)").matches}`
+);
+const data = await resp.json();
+const hb = await Hyperbeam(container, data.embed_url, {
+  webhookUserdata: {
+    token: data.webhook_token,
+  },
+});
     </script>
   </body>
 </html>

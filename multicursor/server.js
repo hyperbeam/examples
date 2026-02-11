@@ -1,46 +1,34 @@
-const path = require("path");
-const express = require("express");
-const axios = require("axios");
+import express from "express";
+
+import { baseConfig, fetchHb, launch, listen } from "../util.js";
+
 const app = express();
 
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "/index.html"));
+app.get("/", (_req, res) => {
+  res.sendFile("index.html", { root: import.meta.dirname });
 });
 
-// Get a cloud computer object. If no object exists, create it.
-let computer;
-app.get("/computer", async (req, res) => {
-  if (computer) {
-    res.send(computer);
-    return;
-  }
-  const roles = [
-    "control",
-    "clipboard_copy",
-    "cursor_data",
-  ];
-  const hbConfig = {
-    hide_cursor: true,
-    default_roles: roles,
-    ublock: true,
-    timeout: {
-      offline: 10,
-    },
-    quality: {
-      mode: "sharp",
-    },
-  };
-  const resp = await axios.post(
-    "https://engine.hyperbeam.com/v0/vm",
-    hbConfig,
-    {
-      headers: { Authorization: `Bearer ${process.env.HB_API_KEY}` },
+const hbConfig = {
+  ...baseConfig,
+  start_url: "https://paint.js.org",
+  default_roles: [...baseConfig.default_roles, "cursor_data"],
+};
+
+// Get a Hyperbeam virtual computer object. If no object exists, create it.
+let hb;
+app.get("/hb", async (req, res) => {
+  try {
+    if (!hb) {
+      hb = await fetchHb({
+        ...hbConfig,
+        dark: req.query["dark"] === "1",
+      });
     }
-  );
-  computer = resp.data;
-  res.send(computer);
+    res.json(hb);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to create Hyperbeam virtual computer" });
+  }
 });
 
-app.listen(8080, () => {
-  console.log("Server start at http://localhost:8080");
-});
+launch(await listen(app, 8080));

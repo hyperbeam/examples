@@ -1,100 +1,75 @@
-const { promisify } = require("util");
-const randomBytes = promisify(require("crypto").randomBytes);
-const path = require("path");
-const express = require("express");
-const axios = require("axios");
-const localtunnel = require("localtunnel");
+import express from "express";
+import localtunnel from "localtunnel";
+
+import { baseConfig, cryptoToken, fetchHb, launch, listen } from "../util.js";
+
+const bearer = cryptoToken();
+const tokens = new Set();
 
 const app = express();
-const port = 8080;
-let computer;
+app.use(express.json());
 
-function listen(webhookUrl, bearer) {
-  const tokens = new Set();
+app.get("/", (_req, res) => {
+  res.sendFile("index.html", { root: import.meta.dirname });
+});
 
-  app.use(express.json());
-
-  app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "/index.html"));
-  });
-
-  app.get("/computer", async (req, res) => {
-    const webhookToken = await randomToken();
-    tokens.add(webhookToken);
-    if (computer) {
-      computer["webhook_token"] = webhookToken;
-      res.send(computer);
-      return;
-    }
-    const settings = {
-      ublock: true,
-      timeout: {
-        offline: 10,
-      },
-      auth: {
-        type: "webhook",
-        value: {
-          url: webhookUrl,
-          bearer,
-        },
-      },
-    };
-    const headers = {
-      Authorization: `Bearer ${process.env.HB_API_KEY}`,
-    };
-    const resp = await axios.post(
-      "https://engine.hyperbeam.com/v0/vm",
-      settings,
-      { headers }
-    );
-    computer = resp.data;
-    computer["webhook_token"] = webhookToken;
-    res.send(computer);
-  });
-
-  app.post("/webhook", async (req, res) => {
-    const { user_id, userdata } = req.body;
-    const incomingBearer = req.get("Authorization").slice(7); // Slice off "Bearer " prefix
-    if (bearer !== incomingBearer) {
-      console.log(`Incorrect incoming bearer token, token=${incomingBearer}`);
-      res.sendStatus(401);
-      return;
-    }
-    console.log(
-      `user_id=${user_id} attempting to connect with token ${userdata.token}`
-    );
-    console.log(
-      `UA=${req.get("HB-User-Agent")}, client IP=${req.get("HB-Connecting-IP")}`
-    );
-    if (!tokens.has(userdata.token)) {
-      console.log(`Unknown userdata token ${userdata.token}`);
-      res.sendStatus(401);
-    }
-    console.log(`user_id=${user_id} connected`);
-    tokens.delete(userdata.token);
-    res.send({
-      authorized: true,
-    });
-  });
-
-  app.listen(port, () => {
-    console.log(`Server started at http://localhost:${port.toString()}`);
-  });
-}
-
-async function randomToken() {
-  bearerBytes = await randomBytes(32);
-  return Buffer.from(bearerBytes).toString("base64");
-}
-
-async function main() {
+let hb;
+app.get("/hb", async (req, res) => {
+  const webhookToken = cryptoToken();
+  tokens.add(webhookToken);
   try {
-    const tunnel = await localtunnel({ port });
-    console.log(`Receiving webhook messages from ${tunnel.url}`);
-    listen(`${tunnel.url}/webhook`, await randomToken());
-  } catch (e) {
-    console.error(`localtunnel failed to expose port ${port.toString()}:`, e);
+    if (!hb) {
+      const settings = {
+        ...hbConfig,
+        dark: req.query["dark"] === "1",
+      };
+      hb = await fetchHb(settings);
+    }
+    hb["webhook_token"] = webhookToken;
+    res.json(hb);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to create Hyperbeam virtual computer" });
   }
-}
+});
 
-main();
+app.post("/webhook", async (req, res) => {
+  const { user_id, userdata } = req.body;
+  const incomingBearer = req.get("authorization").slice("Bearer ".length); // Slice off "Bearer " prefix
+  if (bearer !== incomingBearer) {
+    console.log(`Incorrect incoming bearer token, token=${incomingBearer}`);
+    res.status(401).send();
+    return;
+  }
+  console.log(
+    `user_id=${user_id} attempting to connect with token ${userdata.token}`
+  );
+  console.log(
+    `UA=${req.get("hb-user-agent")}, client IP=${req.get("hb-connecting-ip")}`
+  );
+  if (!tokens.has(userdata.token)) {
+    console.log(`Unknown userdata token ${userdata.token}`);
+    res.status(401).send();
+  }
+  console.log(`user_id=${user_id} connected`);
+  tokens.delete(userdata.token);
+  res.send({
+    authorized: true,
+  });
+});
+
+const server = await listen(app, 8080);
+const port = server.address().port;
+const tunnel = await localtunnel({ port });
+console.log(`Receiving webhook requests from ${tunnel.url}`);
+
+const hbConfig = {
+  ...baseConfig,
+  auth: {
+    type: "webhook",
+    value: {
+      url: `${tunnel.url}/webhook`,
+      bearer,
+    },
+  },
+};

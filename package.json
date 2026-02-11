@@ -1,13 +1,11 @@
 {
   "name": "examples",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "type": "module",
   "devDependencies": {
     "prettier": "2.7.1"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "format": "prettier --write ."
   },
   "repository": {
@@ -30,9 +28,14 @@
   ],
   "keywords": [],
   "author": "",
-  "license": "MIT",
+  "license": "0BSD",
   "bugs": {
     "url": "https://github.com/hyperbeam/examples/issues"
   },
-  "homepage": "https://github.com/hyperbeam/examples#readme"
+  "homepage": "https://github.com/hyperbeam/examples#readme",
+  "dependencies": {
+    "@hyperbeam/web": "latest",
+    "express": "^5",
+    "open": "^11.0.0"
+  }
 }

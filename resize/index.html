@@ -1,77 +1,81 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
+    <meta charset="UTF-8">
+    <meta name="color-scheme" content="light dark">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="icon" href="data:,">
     <style>
-      body {
-        margin: 0;
-        padding: 0;
-        width: 100%;
-        background-image: linear-gradient(
-            rgba(0, 127, 239, 0.3) 0.1em,
-            transparent 0.1em
-          ),
-          linear-gradient(
-            90deg,
-            rgba(0, 127, 239, 0.3) 0.1em,
-            transparent 0.1em
-          );
-        background-size: 6em 6em;
-      }
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  background-image: linear-gradient(
+      rgba(0, 127, 239, 0.3) 0.1em,
+      transparent 0.1em
+    ),
+    linear-gradient(
+      90deg,
+      rgba(0, 127, 239, 0.3) 0.1em,
+      transparent 0.1em
+    );
+  background-size: 6em 6em;
+}
 
-      .resize-drag {
-        margin: 1rem;
-        font-size: 20px;
-        font-family: sans-serif;
-        background-color: rgb(0, 127, 239, 0.2);
-        border: 2px solid rgb(0, 127, 239, 0.2);
-        display: inline-block;
-        box-sizing: content-box;
-        position: relative;
-      }
+.resize-drag {
+  margin: 1rem;
+  font-size: 20px;
+  font-family: sans-serif;
+  background-color: rgb(0, 127, 239, 0.2);
+  border: 2px solid rgb(0, 127, 239, 0.2);
+  display: inline-block;
+  box-sizing: content-box;
+  position: relative;
+}
 
-      #cloudComputerDiv {
-        width: 100%;
-        height: 100%;
-      }
+#hbDiv {
+  width: 100%;
+  height: 100%;
+}
 
-      .bar {
-        position: absolute;
-        top: 100%;
-        left: -2px;
-        background-color: rgb(0, 127, 239);
-        border-bottom: 2px solid rgb(0, 127, 239, 0.2);
-        border-left: 2px solid rgb(0, 127, 239, 0.2);
-        border-right: 2px solid rgb(0, 127, 239, 0.2);
-        height: 36px;
-        width: 100%;
-        text-align: center;
-      }
+.bar {
+  position: absolute;
+  top: 100%;
+  left: -2px;
+  background-color: rgb(0, 127, 239);
+  border-bottom: 2px solid rgb(0, 127, 239, 0.2);
+  border-left: 2px solid rgb(0, 127, 239, 0.2);
+  border-right: 2px solid rgb(0, 127, 239, 0.2);
+  height: 36px;
+  width: 100%;
+  text-align: center;
+}
 
-      .lock.hidden {
-        display: none;
-      }
+.lock.hidden {
+  display: none;
+}
 
-      .lock {
-        border: none;
-        background: none;
-        cursor: pointer;
-        display: inline-block;
-        margin: 4px auto;
-      }
+.lock {
+  border: none;
+  background: none;
+  cursor: pointer;
+  display: inline-block;
+  margin: 4px auto;
+}
 
-      path {
-        fill: #fff;
-      }
+path {
+  fill: #fff;
+}
 
-      .hidden {
-        display: none;
-      }
+.hidden {
+  display: none;
+}
     </style>
   </head>
 
   <body>
     <div class="resize-drag hidden">
-      <div id="cloudComputerDiv"></div>
+      <div id="hbDiv"></div>
       <div class="bar">
         <button id="unlock" class="lock">
           <svg
@@ -101,112 +105,112 @@
     </div>
     <script src="https://unpkg.com/interactjs/dist/interact.min.js"></script>
     <script type="module">
-      import Hyperbeam from "https://unpkg.com/@hyperbeam/web@latest/dist/index.js";
+import Hyperbeam from "https://unpkg.com/@hyperbeam/web@latest/dist/index.js";
 
-      async function main() {
-        const container = cloudComputerDiv.parentElement;
-        const initX = localStorage.getItem("x");
-        const initY = localStorage.getItem("y");
-        if (initX && initY) {
-          container.style.transform = `translate(${initX}px, ${initY}px)`;
-          container.setAttribute("data-x", ~~initX);
-          container.setAttribute("data-y", ~~initY);
-        }
-        const initWidth = localStorage.getItem("width");
-        const initHeight = localStorage.getItem("height");
-        let baseUrl = "/computer";
-        if (initWidth && initHeight) {
-          baseUrl += `?width=${initWidth}&height=${initHeight}`;
-        }
+async function main() {
+  const container = hbDiv.parentElement;
+  const initX = localStorage.getItem("x");
+  const initY = localStorage.getItem("y");
+  if (initX && initY) {
+    container.style.transform = `translate(${initX}px, ${initY}px)`;
+    container.setAttribute("data-x", ~~initX);
+    container.setAttribute("data-y", ~~initY);
+  }
+  const initWidth = localStorage.getItem("width");
+  const initHeight = localStorage.getItem("height");
+  let baseUrl = "/hb";
+  if (initWidth && initHeight) {
+    baseUrl += `?width=${initWidth}&height=${initHeight}`;
+  }
 
-        const resp = await fetch(baseUrl);
-        const data = await resp.json();
-        const hb = await Hyperbeam(cloudComputerDiv, data.embed_url);
-        container.style.width = `${hb.width}px`;
-        container.style.height = `${hb.height}px`;
-        container.classList.remove("hidden");
-        lock.addEventListener("click", disableInteractives);
-        unlock.addEventListener("click", () => enableInteractives(hb));
-        enableInteractives(hb);
-      }
+  const resp = await fetch(baseUrl);
+  const data = await resp.json();
+  const hb = await Hyperbeam(hbDiv, data.embed_url);
+  container.style.width = `${hb.width}px`;
+  container.style.height = `${hb.height}px`;
+  container.classList.remove("hidden");
+  lock.addEventListener("click", disableInteractives);
+  unlock.addEventListener("click", () => enableInteractives(hb));
+  enableInteractives(hb);
+}
 
-      main();
+main();
 
-      function dragMoveListener(event) {
-        const target = event.target;
-        const x = (parseFloat(target.getAttribute("data-x")) || 0) + event.dx;
-        const y = (parseFloat(target.getAttribute("data-y")) || 0) + event.dy;
+function dragMoveListener(event) {
+  const target = event.target;
+  const x = (parseFloat(target.getAttribute("data-x")) || 0) + event.dx;
+  const y = (parseFloat(target.getAttribute("data-y")) || 0) + event.dy;
 
-        target.style.transform = `translate(${x}px, ${y}px)`;
-        target.setAttribute("data-x", x);
-        target.setAttribute("data-y", y);
-        localStorage.setItem("x", x.toString());
-        localStorage.setItem("y", y.toString());
-      }
+  target.style.transform = `translate(${x}px, ${y}px)`;
+  target.setAttribute("data-x", x);
+  target.setAttribute("data-y", y);
+  localStorage.setItem("x", x.toString());
+  localStorage.setItem("y", y.toString());
+}
 
-      function enableInteractives(hb) {
-        lock.classList.remove("hidden");
-        unlock.classList.add("hidden");
-        interact(".resize-drag")
-          .resizable({
-            edges: { left: true, right: true, bottom: true, top: true },
-            listeners: {
-              move(event) {
-                const target = event.target;
-                const width = Math.floor(event.rect.width);
-                const height = Math.floor(event.rect.height);
-                let x = parseFloat(target.getAttribute("data-x")) || 0;
-                let y = parseFloat(target.getAttribute("data-y")) || 0;
+function enableInteractives(hb) {
+  lock.classList.remove("hidden");
+  unlock.classList.add("hidden");
+  interact(".resize-drag")
+    .resizable({
+      edges: { left: true, right: true, bottom: true, top: true },
+      listeners: {
+        move(event) {
+          const target = event.target;
+          const width = Math.floor(event.rect.width);
+          const height = Math.floor(event.rect.height);
+          let x = parseFloat(target.getAttribute("data-x")) || 0;
+          let y = parseFloat(target.getAttribute("data-y")) || 0;
 
-                x += event.deltaRect.left;
-                y += event.deltaRect.top;
+          x += event.deltaRect.left;
+          y += event.deltaRect.top;
 
-                target.style.width = `${width}px`;
-                target.style.height = `${height}px`;
-                target.style.transform = `translate(${x}px, ${y}px)`;
-                target.setAttribute("data-x", x);
-                target.setAttribute("data-y", y);
-                localStorage.setItem("x", x.toString());
-                localStorage.setItem("y", y.toString());
-              },
-              end(event) {
-                const target = event.target;
-                const desiredWidth = event.rect.width;
-                const desiredHeight = event.rect.height;
-                const pixels = Math.min(
-                  desiredWidth * desiredHeight,
-                  hb.maxArea
-                );
-                const aspectRatio = desiredWidth / desiredHeight;
-                const height = Math.floor(Math.sqrt(pixels / aspectRatio));
-                const width = Math.floor(height * aspectRatio);
-                try {
-                  hb.resize(width, height);
-                } catch {}
-                localStorage.setItem("width", width.toString());
-                localStorage.setItem("height", height.toString());
-                target.style.width = desiredWidth;
-                target.style.height = desiredHeight;
-              },
-            },
-            modifiers: [
-              interact.modifiers.restrictSize({
-                min: { width: 100, height: 50 },
-              }),
-            ],
-            inertia: true,
-          })
-          .draggable({
-            listeners: { move: dragMoveListener },
-            inertia: true,
-          });
-      }
+          target.style.width = `${width}px`;
+          target.style.height = `${height}px`;
+          target.style.transform = `translate(${x}px, ${y}px)`;
+          target.setAttribute("data-x", x);
+          target.setAttribute("data-y", y);
+          localStorage.setItem("x", x.toString());
+          localStorage.setItem("y", y.toString());
+        },
+        end(event) {
+          const target = event.target;
+          const desiredWidth = event.rect.width;
+          const desiredHeight = event.rect.height;
+          const pixels = Math.min(
+            desiredWidth * desiredHeight,
+            hb.maxArea
+          );
+          const aspectRatio = desiredWidth / desiredHeight;
+          const height = Math.floor(Math.sqrt(pixels / aspectRatio));
+          const width = Math.floor(height * aspectRatio);
+          try {
+            hb.resize(width, height);
+          } catch {}
+          localStorage.setItem("width", width.toString());
+          localStorage.setItem("height", height.toString());
+          target.style.width = desiredWidth;
+          target.style.height = desiredHeight;
+        },
+      },
+      modifiers: [
+        interact.modifiers.restrictSize({
+          min: { width: 100, height: 50 },
+        }),
+      ],
+      inertia: true,
+    })
+    .draggable({
+      listeners: { move: dragMoveListener },
+      inertia: true,
+    });
+}
 
-      function disableInteractives() {
-        lock.classList.add("hidden");
-        unlock.classList.remove("hidden");
-        interact(".resize-drag").unset();
-      }
+function disableInteractives() {
+  lock.classList.add("hidden");
+  unlock.classList.remove("hidden");
+  interact(".resize-drag").unset();
+}
     </script>
   </body>
 </html>

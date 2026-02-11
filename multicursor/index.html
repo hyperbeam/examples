@@ -1,55 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF->
+    <meta name="color-scheme" content="light dark">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="icon" href="data:,">
     <title>Hyperbeam multicursor example</title>
     <style>
-      #hb-large-container {
-        width: 1280px;
-        height: 720px;
-      }
+html,
+body {
+  overflow: hidden;
+  overflow: clip;
+}
 
-      #hb-mini-container {
-        /* 16/9 aspect-ratio */
-        width: 500px;
-        height: 281px;
-        background-color: black;
-        position: fixed;
-        top: 10px;
-        right: 10px;
-        z-index: 1;
-        border: 1px solid black;
-      }
+#hb-large-container {
+  min-width: 300px;
+  min-height: 300px;
+  width: fit-content;
+}
 
-      .cursor {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 32px;
-        height: 32px;
-        pointer-events: none;
-        z-index: 2;
-        transition: opacity 1s ease;
-      }
+#hb-mini-container {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  opacity: 0.9;
+  z-index: 1;
+  width: 40%;
+}
 
-      .icon {
-        width: 32px;
-        height: 32px;
-        translate: -8px -8px;
-      }
+.cursor {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 32px;
+  height: 32px;
+  pointer-events: none;
+  z-index: 1;
+  transition: opacity 1s ease;
+}
 
-      .hidden {
-        display: none;
-      }
+.icon {
+  width: 32px;
+  height: 32px;
+  translate: -8px -8px;
+}
+
+.hidden {
+  display: none;
+}
     </style>
   </head>
 
   <body>
-    <div>
-      <button id="cursor-events-toggle">Stop sending cursor events</button>
-    </div>
-    <div id="hb-mini-container"></div>
+    <button id="cursor-events-toggle">Stop sending cursor events</button>
     <div id="hb-large-container"></div>
+    <div id="hb-mini-container"></div>
     <div class="cursor hidden">
       <svg
         class="icon"
@@ -71,100 +76,102 @@
       </svg>
     </div>
     <script type="module">
-      import Hyperbeam from "https://unpkg.com/@hyperbeam/web@latest/dist/index.js";
+import Hyperbeam from "https://unpkg.com/@hyperbeam/web@latest/dist/index.js";
 
-      const cursorNode = document.querySelector(".cursor");
-      const cursorEventsToggle = document.getElementById(
-        "cursor-events-toggle"
-      );
-      const largeContainer = document.getElementById("hb-large-container");
-      const miniContainer = document.getElementById("hb-mini-container");
+const cursorNode = document.querySelector(".cursor");
+const cursorEventsToggle = document.getElementById(
+  "cursor-events-toggle"
+);
+const largeContainer = document.getElementById("hb-large-container");
+const miniContainer = document.getElementById("hb-mini-container");
 
-      async function main() {
-        const resp = await fetch("/computer");
-        const data = await resp.json();
-        loadHyperbeam(largeContainer, data.embed_url);
-        loadHyperbeam(miniContainer, data.embed_url);
+async function main() {
+  const resp = await fetch(
+    `/hb?dark=${+matchMedia("(prefers-color-scheme:dark)").matches}`
+  );
+  const data = await resp.json();
+  loadHyperbeam(largeContainer, data.embed_url);
+  loadHyperbeam(miniContainer, data.embed_url);
+}
+
+main();
+
+async function loadHyperbeam(container, embedUrl) {
+  const rect = container.getBoundingClientRect();
+  const cursors = new Map();
+  let cursorOn = true;
+
+  cursorEventsToggle.addEventListener("click", () => {
+    if (cursorOn) {
+      cursorEventsToggle.innerText = "Start sending cursor events";
+      disableInput(container);
+      cursorOn = false;
+    } else {
+      cursorEventsToggle.innerText = "Stop sending cursor events";
+      enableInput(container);
+      cursorOn = true;
+    }
+  });
+
+  const hb = await Hyperbeam(container, embedUrl, {
+    onCursor({ clientX, clientY, userId }) {
+      if (!cursors.has(userId)) {
+        newCursor(userId, cursors);
       }
+      const updateCursor = cursors.get(userId);
+      updateCursor([clientX, clientY]);
+    },
+  });
+}
 
-      main();
+function newCursor(userId, cursors) {
+  const elm = cursorNode.cloneNode(true);
+  elm.classList.remove("hidden");
+  document.body.appendChild(elm);
 
-      async function loadHyperbeam(container, embedUrl) {
-        const rect = container.getBoundingClientRect();
-        const cursors = new Map();
-        let cursorOn = true;
+  const onCloseTimeout = () => {
+    cursors.delete(userId);
+    elm.remove();
+  };
 
-        cursorEventsToggle.addEventListener("click", () => {
-          if (cursorOn) {
-            cursorEventsToggle.innerText = "Start sending cursor events";
-            disableInput(container);
-            cursorOn = false;
-          } else {
-            cursorEventsToggle.innerText = "Stop sending cursor events";
-            enableInput(container);
-            cursorOn = true;
-          }
-        });
+  const onFadeTimeout = () => {
+    elm.style.opacity = 0;
+  };
 
-        const hb = await Hyperbeam(container, embedUrl, {
-          onCursor({ clientX, clientY, userId }) {
-            if (!cursors.has(userId)) {
-              newCursor(userId, cursors);
-            }
-            const updateCursor = cursors.get(userId);
-            updateCursor([clientX, clientY]);
-          },
-        });
-      }
+  let closeTimeout = setTimeout(onCloseTimeout, 9000);
+  let fadeTimeout = setTimeout(onFadeTimeout, 5000);
 
-      function newCursor(userId, cursors) {
-        const elm = cursorNode.cloneNode(true);
-        elm.classList.remove("hidden");
-        document.body.appendChild(elm);
+  const update = (p) => {
+    elm.style.opacity = 1;
+    elm.style.setProperty("transform", `translate(${p[0]}px, ${p[1]}px)`);
+    clearTimeout(closeTimeout);
+    clearTimeout(fadeTimeout);
+    closeTimeout = setTimeout(onCloseTimeout, 9000);
+    fadeTimeout = setTimeout(onFadeTimeout, 5000);
+  };
 
-        const onCloseTimeout = () => {
-          cursors.delete(userId);
-          elm.remove();
-        };
+  cursors.set(userId, update);
+}
 
-        const onFadeTimeout = () => {
-          elm.style.opacity = 0;
-        };
+function cancelInput(e) {
+  e.stopPropagation();
+}
 
-        let closeTimeout = setTimeout(onCloseTimeout, 9000);
-        let fadeTimeout = setTimeout(onFadeTimeout, 5000);
+function disableInput(div) {
+  div.addEventListener("mousemove", cancelInput, true);
+  div.addEventListener("mousedown", cancelInput, true);
+  div.addEventListener("mouseup", cancelInput, true);
+  const vid = div.shadowRoot.getElementById("vid");
+  if (vid) {
+    vid.style.cursor = null;
+  }
+}
 
-        const update = (p) => {
-          elm.style.opacity = 1;
-          elm.style.setProperty("transform", `translate(${p[0]}px, ${p[1]}px)`);
-          clearTimeout(closeTimeout);
-          clearTimeout(fadeTimeout);
-          closeTimeout = setTimeout(onCloseTimeout, 9000);
-          fadeTimeout = setTimeout(onFadeTimeout, 5000);
-        };
-
-        cursors.set(userId, update);
-      }
-
-      function cancelInput(e) {
-        e.stopPropagation();
-      }
-
-      function disableInput(div) {
-        div.addEventListener("mousemove", cancelInput, true);
-        div.addEventListener("mousedown", cancelInput, true);
-        div.addEventListener("mouseup", cancelInput, true);
-        const vid = div.shadowRoot.getElementById("vid");
-        if (vid) {
-          vid.style.cursor = null;
-        }
-      }
-
-      function enableInput(div) {
-        div.removeEventListener("mousemove", cancelInput, true);
-        div.removeEventListener("mousedown", cancelInput, true);
-        div.removeEventListener("mouseup", cancelInput, true);
-      }
+function enableInput(div) {
+  div.removeEventListener("mousemove", cancelInput, true);
+  div.removeEventListener("mousedown", cancelInput, true);
+  div.removeEventListener("mouseup", cancelInput, true);
+}
     </script>
   </body>
 </html>

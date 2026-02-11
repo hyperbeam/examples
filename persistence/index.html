@@ -1,185 +1,189 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8">
+    <meta name="color-scheme" content="light dark">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="icon" href="data:,">
     <title>Hyperbeam Persistence Example</title>
     <style>
-      body {
-        font-family: sans-serif;
-      }
+body {
+  font-family: sans-serif;
+}
 
-      .box {
-        display: inline-grid;
-        grid-template-rows: repeat(3, 1fr);
-        grid-template-columns: repeat(3, 1fr);
-        align-items: center;
-        justify-items: center;
-        gap: 10px;
-        margin: 10px;
-        border-radius: 10px;
-        background-color: rgba(0, 0, 0, 0.1);
-        padding: 10px;
-        width: 136px;
-        height: 136px;
-        vertical-align: top;
-        cursor: pointer;
-      }
+.box {
+  display: inline-grid;
+  grid-template-rows: repeat(3, 1fr);
+  grid-template-columns: repeat(3, 1fr);
+  align-items: center;
+  justify-items: center;
+  gap: 10px;
+  margin: 10px;
+  border-radius: 10px;
+  background-color: rgba(0, 0, 0, 0.1);
+  background-color: rgb(from currentColor r g b / 0.1);
+  padding: 10px;
+  width: 136px;
+  height: 136px;
+  vertical-align: top;
+  cursor: pointer;
+}
 
-      .box > img {
-        width: 32px;
-        height: 32px;
-      }
+.box > img {
+  width: 32px;
+  height: 32px;
+}
 
-      #new-computer {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-      }
+#new-hb {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
 
-      .hidden {
-        display: none;
-      }
+.hidden {
+  display: none;
+}
 
-      #hb-computer-container {
-        position: fixed;
-        inset: 0;
-        top: 50px;
-      }
+#hb-container {
+  position: fixed;
+  inset: 0;
+  top: 50px;
+}
     </style>
   </head>
   <body>
     <div id="menu" class="hidden">
-      <div id="new-computer" class="box">
+      <div id="new-hb" class="box">
         <p>Create new</p>
       </div>
     </div>
-    <div id="computer-page" class="hidden">
+    <div id="hb-page" class="hidden">
       <button id="exit-btn">Save and exit</button>
-      <div id="hb-computer-container"></div>
+      <div id="hb-container"></div>
     </div>
     <script type="module">
-      import Hyperbeam from "https://unpkg.com/@hyperbeam/web@latest/dist/index.js";
+import Hyperbeam from "https://unpkg.com/@hyperbeam/web@latest/dist/index.js";
 
-      loadProfiles();
-      handleRoute();
-      let hyperbeam;
-      let activeSessionId;
-      let profileId;
-      const newBtn = document.getElementById("new-computer");
-      const computerPage = document.getElementById("computer-page");
-      const exitBtn = document.getElementById("exit-btn");
-      const container = document.getElementById("hb-computer-container");
-      newBtn.addEventListener("click", () => loadComputer());
-      exitBtn.addEventListener("click", () => exitComputer(hyperbeam));
+const newBtn = document.getElementById("new-hb");
+const hbPage = document.getElementById("hb-page");
+const exitBtn = document.getElementById("exit-btn");
+const container = document.getElementById("hb-container");
 
-      async function loadProfiles() {
-        const resp = await fetch("/sessions");
-        const sessions = await resp.json();
-        for (const node of document.querySelectorAll(".box-item")) {
-          node.remove();
-        }
-        for (const session of sessions) {
-          const div = document.createElement("div");
-          div.classList.add("box", "box-item");
-          menu.appendChild(div);
-          for (const tab of session.sites) {
-            const img = document.createElement("img");
-            img.src = tab.favIconUrl;
-            div.appendChild(img);
-          }
-          div.addEventListener("click", () => loadComputer(session.session_id));
-        }
-      }
+loadProfiles();
+handleRoute();
+let hb;
+let activeSessionId;
+let profileId;
+newBtn.addEventListener("click", () => loadHb());
+exitBtn.addEventListener("click", () => exitHb());
 
-      function handleRoute() {
-        switch (window.location.pathname) {
-          case "/":
-            menu.classList.remove("hidden");
-            break;
-          case "/profile":
-            const search = new URLSearchParams(window.location.search);
-            loadComputer(search.get("session_id"));
-            break;
-          default:
-            window.location.replace("/");
-        }
-      }
+async function loadProfiles() {
+  const resp = await fetch("/sessions");
+  const sessions = await resp.json();
+  for (const node of document.querySelectorAll(".box-item")) {
+    node.remove();
+  }
+  for (const session of sessions) {
+    const div = document.createElement("div");
+    div.classList.add("box", "box-item");
+    menu.appendChild(div);
+    for (const tab of session.sites) {
+      const img = document.createElement("img");
+      img.src = tab.favIconUrl;
+      div.appendChild(img);
+    }
+    div.addEventListener("click", () => loadHb(session.session_id));
+  }
+}
 
-      async function updateSession(sessionId) {
-        const tabs = await hyperbeam.tabs.query({});
-        return fetch("/sites", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            session_id: sessionId,
-            sites: tabs,
-          }),
-        });
-      }
+function handleRoute() {
+  switch (window.location.pathname) {
+    case "/":
+      menu.classList.remove("hidden");
+      break;
+    case "/profile":
+      const search = new URLSearchParams(window.location.search);
+      loadHb(search.get("session_id"));
+      break;
+    default:
+      window.location.replace("/");
+  }
+}
 
-      function debounce(func, timeout = 300) {
-        let timer;
-        return (...args) => {
-          clearTimeout(timer);
-          timer = setTimeout(() => {
-            func.apply(this, args);
-          }, timeout);
-        };
-      }
+async function updateSession(sessionId) {
+  const tabs = await hb.tabs.query({});
+  return fetch("/sites", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      session_id: sessionId,
+      sites: tabs,
+    }),
+  });
+}
 
-      async function loadComputer(sessionId) {
-        menu.classList.add("hidden");
-        computerPage.classList.remove("hidden");
-        let url = "/computer";
-        if (sessionId) {
-          url += `?session_id=${sessionId}`;
-        }
-        const resp = await fetch(url);
-        const data = await resp.json();
-        activeSessionId = data.session_id;
-        profileId = sessionId || activeSessionId;
-        hyperbeam = await Hyperbeam(container, data.embed_url);
+function debounce(func, timeout = 300) {
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      func.apply(this, args);
+    }, timeout);
+  };
+}
 
-        let debounce;
-        hyperbeam.tabs.onUpdated.addListener(() => {
-          clearTimeout(debounce);
-          debounce = setTimeout(() => updateSession(profileId), 2000);
-        });
+async function loadHb(sessionId) {
+  menu.classList.add("hidden");
+  hbPage.classList.remove("hidden");
+  let url = `/hb?dark=${+matchMedia("(prefers-color-scheme:dark)")
+    .matches}`;
+  if (sessionId) {
+    url += `&session_id=${sessionId}`;
+  }
+  const resp = await fetch(url);
+  const data = await resp.json();
+  activeSessionId = data.session_id;
+  profileId = sessionId || activeSessionId;
+  hb = await Hyperbeam(container, data.embed_url);
 
-        window.history.pushState(
-          "",
-          "",
-          `/profile?session_id=${sessionId || data.session_id}`
-        );
-      }
+  let debounce;
+  hb.tabs.onUpdated.addListener(() => {
+    clearTimeout(debounce);
+    debounce = setTimeout(() => updateSession(profileId), 2000);
+  });
 
-      async function exitComputer(hb) {
-        const promises = [];
-        exitBtn.disabled = true;
-        await updateSession(profileId);
-        try {
-          await Promise.all([
-            loadProfiles(),
-            fetch(`/computer/stop?session_id=${activeSessionId}`, {
-              method: "POST",
-            }),
-          ]);
-          if (hb) {
-            hb.destroy();
-          }
-        } catch (e) {
-          console.error(e);
-        } finally {
-          exitBtn.disabled = false;
-        }
-        menu.classList.remove("hidden");
-        computerPage.classList.add("hidden");
-        window.history.pushState("", "", "/");
-      }
+  window.history.pushState(
+    "",
+    "",
+    `/profile?session_id=${sessionId || data.session_id}`
+  );
+}
+
+async function exitHb() {
+  const promises = [];
+  exitBtn.disabled = true;
+  await updateSession(profileId);
+  try {
+    await Promise.all([
+      loadProfiles(),
+      fetch(`/hb/stop?session_id=${activeSessionId}`, {
+        method: "POST",
+      }),
+    ]);
+    if (hb) {
+      hb.destroy();
+    }
+  } catch (e) {
+    console.error(e);
+  } finally {
+    exitBtn.disabled = false;
+  }
+  menu.classList.remove("hidden");
+  hbPage.classList.add("hidden");
+  window.history.pushState("", "", "/");
+}
     </script>
   </body>
 </html>

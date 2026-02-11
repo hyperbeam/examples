@@ -1,38 +1,36 @@
-const express = require("express");
-const axios = require("axios");
+import express from "express";
+
+import { baseConfig, fetchHb, launch, listen } from "../util.js";
+
 const app = express();
 
-const pacIP = "<ip>"
-const pacUsername = "<username>"
-const pacPassword = "<password>"
-const vmConfig = {
-  offline_timeout: 300,
+const proxyHost = "<ip/hostname:port>";
+const username = "<username>";
+const password = "<password>";
+const hbConfig = {
+  ...baseConfig,
   http_proxy: {
-    "pac": `function FindProxyForURL(url, host) {return 'PROXY ${pacIP}'}`,
-    "username": pacUsername,
-    "password": pacPassword
+    start_url: "https://whatismyipaddress.com/",
+    pac: `function FindProxyForURL(url, host) {return 'PROXY ${proxyHost}'}`,
+    username,
+    password,
   },
-}
+};
 
-let computer;
+let hb;
 app.get("/", async (req, res) => {
-  if (computer) {
-    res.redirect(302, computer.embed_url);
-    return;
+  try {
+    if (!hb) {
+      hb = await fetchHb({
+        ...hbConfig,
+        dark: req.query["dark"] === "1",
+      });
+    }
+    res.redirect(302, hb.embed_url);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to create Hyperbeam virtual computer" });
   }
-
-  const headers = {
-    Authorization: `Bearer ${process.env.HB_API_KEY}`
-  };
-  const resp = await axios.post(
-    "https://engine.hyperbeam.com/v0/vm",
-    vmConfig,
-    { headers }
-  );
-  computer = resp.data;
-  res.redirect(302, computer.embed_url);
 });
 
-app.listen(8080, () => {
-  console.log("Server start at http://localhost:8080");
-});
+launch(await listen(app, 8080));

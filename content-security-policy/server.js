@@ -1,51 +1,51 @@
-const path = require("path");
-const express = require("express");
-const axios = require("axios");
+import express from "express";
+
+import { baseConfig, fetchHb, launch, listen } from "../util.js";
+
 const app = express();
 
-app.get("/", (req, res) => {
+app.get("/", (_req, res) => {
   res.header(
-    "Content-Security-Policy",
-    "default-src 'self'; script-src-elem 'self' blob:; style-src-elem 'self' blob:; connect-src 'self' https://*.hyperbeam.com wss://*.hyperbeam.com"
+    "content-security-policy",
+    // The minimum csp policy needed for the functioning of Hyperbeam virtual computer
+    "default-src 'self'; img-src 'self' blob: data:; script-src 'self' blob:; connect-src 'self' https://*.hyperbeam.com wss://*.hyperbeam.com"
   );
-  res.sendFile(path.join(__dirname, "index.html"));
+  res.sendFile("index.html", { root: import.meta.dirname });
 });
 
-app.get("/script.js", (req, res) => {
-  res.sendFile(path.join(__dirname, "script.js"));
+app.get("/script.js", (_req, res) => {
+  res.sendFile("script.js", { root: import.meta.dirname });
 });
 
-app.get("/hb.js", (req, res) => {
+app.get("/style.css", (_req, res) => {
+  res.sendFile("style.css", { root: import.meta.dirname });
+});
+
+app.get("/hb.js", (_req, res) => {
   res.sendFile(
-    path.join(
-      __dirname,
-      "node_modules",
-      "@hyperbeam",
-      "web",
-      "dist",
-      "index.js"
-    )
+    import.meta
+      .resolve("@hyperbeam/web/dist/index.js")
+      .substring("file://".length)
   );
 });
 
-// Get a cloud computer object. If no object exists, create it.
-let computer;
-app.get("/computer", async (req, res) => {
-  if (computer) {
-    res.send(computer);
-    return;
-  }
-  const resp = await axios.post(
-    "https://engine.hyperbeam.com/v0/vm",
-    {},
-    {
-      headers: { Authorization: `Bearer ${process.env.HB_API_KEY}` },
+const hbConfig = baseConfig;
+
+// Get a Hyperbeam virtual computer object. If no object exists, create it.
+let hb;
+app.get("/hb", async (req, res) => {
+  try {
+    if (!hb) {
+      hb = await fetchHb({
+        ...hbConfig,
+        dark: req.query["dark"] === "1",
+      });
     }
-  );
-  computer = resp.data;
-  res.send(computer);
+    res.json(hb);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to create Hyperbeam virtual computer" });
+  }
 });
 
-app.listen(8080, () => {
-  console.log("Server start at http://localhost:8080");
-});
+launch(await listen(app, 8080));

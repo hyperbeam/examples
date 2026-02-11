@@ -1,87 +1,79 @@
-const path = require("path");
-const express = require("express");
-const axios = require("axios");
-const bodyParser = require("body-parser");
+import express from "express";
+
+import { baseConfig, fetchHb, launch, listen } from "../util.js";
+
 const app = express();
+app.use(express.json());
 
-app.use(bodyParser.json());
-
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "/index.html"));
+app.get("/", (_req, res) => {
+  res.sendFile("index.html", { root: import.meta.dirname });
 });
 
-// Get a cloud computer object. If no object exists, create it.
-let computer;
-app.get("/computer", async (req, res) => {
-  if (computer) {
-    res.send(computer);
-    return;
-  }
-  const hbConfig = {
-    region: "NA",
-    timeout: {
-      offline: 100,
-    },
-    quality: {
-      mode: "sharp",
-    },
-    hide_cursor: true,
-    start_url: "https://profile.w3schools.com/login",
-    field_masking: [
-      {
-        matches: ["https://profile.w3schools.com/*"],
-        selectors: [
-          "input[name=\"email\"]",
-          "input[name=\"password\"]"
-        ]
-      }
-    ]
-  };
-  const resp = await axios.post(
-    "https://engine.hyperbeam.com/v0/vm",
-    hbConfig,
+const hbConfig = {
+  ...baseConfig,
+  start_url: "https://profile.w3schools.com/login",
+  field_masking: [
     {
-      headers: { Authorization: `Bearer ${process.env.HB_API_KEY}` },
+      matches: ["https://profile.w3schools.com/*"],
+      selectors: ['input[name="email"]', 'input[name="password"]'],
+    },
+  ],
+};
+
+// Get a Hyperbeam virtual computer object. If no object exists, create it.
+let hb;
+app.get("/hb", async (req, res) => {
+  try {
+    if (!hb) {
+      hb = await fetchHb({
+        ...hbConfig,
+        dark: req.query["dark"] === "1",
+      });
     }
-  );
-  computer = resp.data;
-  res.send(computer);
+    res.json(hb);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to create Hyperbeam virtual computer" });
+  }
 });
 
 function removeQueryParams(s) {
   return s.split("?")[0];
 }
 
-function toggleFieldMasking(userId, add) {
+async function toggleFieldMasking(userId, add) {
   const path = add ? "/addRoles" : "/removeRoles";
   const data = [[userId], ["field_masking"]];
-  return axios.post(
-    removeQueryParams(computer.embed_url) + path,
-    data,
-    {
-      headers: { Authorization: `Bearer ${computer.admin_token}` }
-    }
-  );
+  const resp = await fetch(removeQueryParams(hb.embed_url) + path, {
+    method: "POST",
+    headers: {
+      authorization: hb.admin_token,
+      "content-type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!resp.ok) {
+    throw new Error(`HTTP error: bad status ${resp.status}`);
+  }
 }
 
 app.post("/mask", async (req, res) => {
-  if (!computer) {
-    res.sendStatus(400);
+  if (!hb) {
+    res.status(400).send();
     return;
   }
   await toggleFieldMasking(req.body.userId, true);
-  res.sendStatus(200);
-})
+  res.status(200).send();
+});
 
 app.delete("/mask", async (req, res) => {
-  if (!computer) {
-    res.sendStatus(400);
+  if (!hb) {
+    res.status(400).send();
     return;
   }
   await toggleFieldMasking(req.body.userId, false);
-  res.sendStatus(200);
-})
-
-app.listen(8080, () => {
-  console.log("Server start at http://localhost:8080");
+  res.status(200).send();
 });
+
+launch(await listen(app, 8080));

@@ -1,1 +1,1 @@
-../node_modules/@hyperbeam/web/dist/index.js
+/home/amby/code/examples/node_modules/@hyperbeam/web/dist/index.js

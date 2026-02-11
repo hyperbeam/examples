@@ -1,35 +1,34 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
+    <meta charset="UTF-8">
+    <meta name="color-scheme" content="light dark">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="icon" href="data:,">
     <title>Hyperbeam AudioContext example</title>
     <style>
-      body {
-        font-family: sans-serif;
-      }
+body {
+  font-family: sans-serif;
+}
 
-      /* #cloudComputerDiv {
-        height: 720px;
-        width: 1280px;
-      } */
+#hbDiv {
+  position: fixed;
+  inset: 0;
+  top: 50px;
+}
 
-      #cloudComputerDiv {
-        position: fixed;
-        inset: 0;
-        top: 50px;
-      }
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-      .toolbar {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-
-      .toolbar > .group {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 10px;
-      }
+.toolbar > .group {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 10px;
+}
     </style>
   </head>
 
@@ -48,128 +47,130 @@
           />
         </div>
         <div class="group">
-          <input type="checkbox" id="reverbToggle" />
+          <input type="checkbox" id="reverbToggle">
           <label for="reverbToggle">Reverb</label>
         </div>
         <div class="group">
-          <input type="checkbox" id="noiseToggle" />
+          <input type="checkbox" id="noiseToggle">
           <label for="noiseToggle">Noise</label>
         </div>
       </div>
-      <div id="cloudComputerDiv"></div>
+      <div id="hbDiv"></div>
     </div>
     <script type="module">
-      import Hyperbeam from "https://unpkg.com/@hyperbeam/web@latest/dist/index.js";
+import Hyperbeam from "https://unpkg.com/@hyperbeam/web@latest/dist/index.js";
 
-      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      let source;
-      const gainNode = audioCtx.createGain();
-      const noiseNode = brownNoise(audioCtx);
-      const reverbNode = reverb(audioCtx, 4, 4);
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+let source;
+const gainNode = audioCtx.createGain();
+const noiseNode = brownNoise(audioCtx);
+const reverbNode = reverb(audioCtx, 4, 4);
 
-      async function main() {
-        const resp = await fetch("/computer");
-        const data = await resp.json();
-        const hb = await Hyperbeam(cloudComputerDiv, data.embed_url, {
-          audioTrackCb: tryAudio,
-        });
-        let source;
+async function main() {
+  const resp = await fetch(
+    `/hb?dark=${+matchMedia("(prefers-color-scheme:dark)").matches}`
+  );
+  const data = await resp.json();
+  const hb = await Hyperbeam(hbDiv, data.embed_url, {
+    audioTrackCb: tryAudio,
+  });
+  let source;
 
-        volumeSlider.addEventListener("input", (e) => {
-          gainNode.gain.value = e.target.value;
-        });
-        reverbToggle.addEventListener("change", (e) => {
-          if (e.target.checked) {
-            enableReverb();
-          } else {
-            disableReverb();
-          }
-        });
-        noiseToggle.addEventListener("change", (e) => {
-          if (e.target.checked) {
-            enableNoise();
-          } else {
-            disableNoise();
-          }
-        });
-        window.addEventListener("mouseup", async () => {
-          // AudioContext will start in a suspended state if no user gestures
-          // have been received on the page: need to check if suspended and resume
-          if (audioCtx.state === "suspended") {
-            try {
-              await audioCtx.resume();
-              console.log("audioCtx state:", audioCtx.state);
-            } catch (e) {
-              console.error(e);
-            }
-          }
-        });
+  volumeSlider.addEventListener("input", (e) => {
+    gainNode.gain.value = e.target.value;
+  });
+  reverbToggle.addEventListener("change", (e) => {
+    if (e.target.checked) {
+      enableReverb();
+    } else {
+      disableReverb();
+    }
+  });
+  noiseToggle.addEventListener("change", (e) => {
+    if (e.target.checked) {
+      enableNoise();
+    } else {
+      disableNoise();
+    }
+  });
+  window.addEventListener("mouseup", async () => {
+    // AudioContext will start in a suspended state if no user gestures
+    // have been received on the page: need to check if suspended and resume
+    if (audioCtx.state === "suspended") {
+      try {
+        await audioCtx.resume();
+        console.log("audioCtx state:", audioCtx.state);
+      } catch (e) {
+        console.error(e);
       }
+    }
+  });
+}
 
-      main();
+main();
 
-      function tryAudio(track) {
-        // audioCtx.createMediaStreamTrackSource(track) is only supported by Firefox
-        const stream = new MediaStream([track]);
-        source = audioCtx.createMediaStreamSource(stream);
-        source.connect(gainNode);
-        gainNode.connect(audioCtx.destination);
-        console.log("connected audio track:", track);
-      }
+function tryAudio(track) {
+  // audioCtx.createMediaStreamTrackSource(track) is only supported by Firefox
+  const stream = new MediaStream([track]);
+  source = audioCtx.createMediaStreamSource(stream);
+  source.connect(gainNode);
+  gainNode.connect(audioCtx.destination);
+  console.log("connected audio track:", track);
+}
 
-      function enableReverb() {
-        source.connect(reverbNode);
-        reverbNode.connect(gainNode);
-      }
+function enableReverb() {
+  source.connect(reverbNode);
+  reverbNode.connect(gainNode);
+}
 
-      function disableReverb() {
-        reverbNode.disconnect();
-      }
+function disableReverb() {
+  reverbNode.disconnect();
+}
 
-      function enableNoise() {
-        noiseNode.connect(gainNode);
-      }
+function enableNoise() {
+  noiseNode.connect(gainNode);
+}
 
-      function disableNoise() {
-        noiseNode.disconnect();
-      }
+function disableNoise() {
+  noiseNode.disconnect();
+}
 
-      // Inspired by https://github.com/web-audio-components/simple-reverb/blob/master/index.js
-      function reverb(ctx, seconds, decay, reverse = false) {
-        const rate = ctx.sampleRate;
-        const length = rate * seconds;
-        const impulse = ctx.createBuffer(2, length, rate);
-        const impulseL = impulse.getChannelData(0);
-        const impulseR = impulse.getChannelData(1);
-        for (let i = 0; i < length; i++) {
-          const n = reverse ? length - i : i;
-          impulseL[i] =
-            (Math.random() * 2 - 1) * Math.pow(1 - n / length, decay);
-          impulseR[i] =
-            (Math.random() * 2 - 1) * Math.pow(1 - n / length, decay);
-        }
-        const reverbNode = ctx.createConvolver();
-        reverbNode.buffer = impulse;
-        return reverbNode;
-      }
+// Inspired by https://github.com/web-audio-components/simple-reverb/blob/master/index.js
+function reverb(ctx, seconds, decay, reverse = false) {
+  const rate = ctx.sampleRate;
+  const length = rate * seconds;
+  const impulse = ctx.createBuffer(2, length, rate);
+  const impulseL = impulse.getChannelData(0);
+  const impulseR = impulse.getChannelData(1);
+  for (let i = 0; i < length; i++) {
+    const n = reverse ? length - i : i;
+    impulseL[i] =
+      (Math.random() * 2 - 1) * Math.pow(1 - n / length, decay);
+    impulseR[i] =
+      (Math.random() * 2 - 1) * Math.pow(1 - n / length, decay);
+  }
+  const reverbNode = ctx.createConvolver();
+  reverbNode.buffer = impulse;
+  return reverbNode;
+}
 
-      // https://noisehack.com/generate-noise-web-audio-api/
-      // Noise is used for debugging
-      function brownNoise(ctx) {
-        const bufferSize = 4096;
-        let lastOut = 0.0;
-        const node = ctx.createScriptProcessor(bufferSize, 1, 1);
-        node.onaudioprocess = function (e) {
-          let output = e.outputBuffer.getChannelData(0);
-          for (let i = 0; i < bufferSize; i++) {
-            const white = Math.random() * 2 - 1;
-            output[i] = (lastOut + 0.02 * white) / 1.02;
-            lastOut = output[i];
-            output[i] *= 3.5; // (roughly) compensate for gain
-          }
-        };
-        return node;
-      }
+// https://noisehack.com/generate-noise-web-audio-api/
+// Noise is used for debugging
+function brownNoise(ctx) {
+  const bufferSize = 4096;
+  let lastOut = 0.0;
+  const node = ctx.createScriptProcessor(bufferSize, 1, 1);
+  node.onaudioprocess = function (e) {
+    let output = e.outputBuffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      const white = Math.random() * 2 - 1;
+      output[i] = (lastOut + 0.02 * white) / 1.02;
+      lastOut = output[i];
+      output[i] *= 3.5; // (roughly) compensate for gain
+    }
+  };
+  return node;
+}
     </script>
   </body>
 </html>

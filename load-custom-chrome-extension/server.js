@@ -1,41 +1,55 @@
-const path = require("path");
-const fs = require("fs");
-const FormData = require("form-data");
-const express = require("express");
-const axios = require("axios");
-const app = express();
+import { openAsBlob } from "node:fs";
 
-const zipPath = path.resolve(__dirname, "./extension.zip");
-const vmConfig = {
-  offline_timeout: 300,
+import express from "express";
+
+import { baseConfig, launch, listen } from "../util.js";
+
+const hbConfig = {
+  ...baseConfig,
   extension: {
     field: "ex",
   },
 };
 
-let computer;
+const app = express();
+
+let hb;
 app.get("/", async (req, res) => {
-  if (computer) {
-    res.redirect(302, computer.embed_url);
-    return;
+  try {
+    if (!hb) {
+      const formData = new FormData();
+      const blob = await openAsBlob("./extension.zip", {
+        type: "application/zip",
+      });
+      formData.append("ex", blob);
+      formData.append(
+        "body",
+        JSON.stringify({
+          ...hbConfig,
+          dark: req.query["dark"] === "1",
+        })
+      );
+
+      const resp = await fetch("https://engine.hyperbeam.com/v0/vm", {
+        method: "POST",
+        headers: {
+          authorization: process.env.HB_API_KEY,
+        },
+        body: formData,
+      });
+
+      if (!resp.ok) {
+        console.error(await resp.text());
+        throw new Error(`HTTP error: bad status ${resp.status}`);
+      }
+
+      hb = await resp.json();
+    }
+    res.redirect(302, hb.embed_url);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to create Hyperbeam virtual computer" });
   }
-
-  const formData = new FormData();
-  formData.append("ex", fs.createReadStream(zipPath));
-  formData.append("body", JSON.stringify(vmConfig));
-
-  const headers = formData.getHeaders();
-  headers["Authorization"] = `Bearer ${process.env.HB_API_KEY}`;
-
-  const resp = await axios.post(
-    "https://engine.hyperbeam.com/v0/vm",
-    formData,
-    { headers }
-  );
-  computer = resp.data;
-  res.redirect(302, computer.embed_url);
 });
 
-app.listen(8080, () => {
-  console.log("Server start at http://localhost:8080");
-});
+launch(await listen(app, 8080));

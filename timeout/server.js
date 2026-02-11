@@ -1,139 +1,114 @@
-const { promisify } = require("util");
-const randomBytes = promisify(require("crypto").randomBytes);
-const path = require("path");
-const express = require("express");
-const axios = require("axios");
-const localtunnel = require("localtunnel");
+import express from "express";
+import localtunnel from "localtunnel";
 
-const app = express();
-const port = 8080;
-let computer;
+import { baseConfig, cryptoToken, fetchHb, launch, listen } from "../util.js";
+
+let hb;
 let hasPremium = false;
 
-function updateComputerTimeout(comp, timeout) {
-  const headers = {
-    Authorization: `Bearer ${comp.admin_token}`,
-  };
-  const computerBaseUrl = comp.embed_url.split("?")[0];
-  return axios.post(`${computerBaseUrl}/timeout`, timeout, { headers });
+function updatehbTimeout(hb, timeout) {
+  return fetch(`${hbBaseUrl}/timeout`, data, {
+    method: "POST",
+    headers: {
+      authorization: hb.admin_token,
+      "content-type": "application/json",
+    },
+    body: JSON.stringify(timeout),
+  });
 }
 
-function listen(webhookUrl, bearer) {
-  app.use(express.json());
+const bearer = cryptoToken();
 
-  app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "/index.html"));
-  });
+const app = express();
+app.use(express.json());
 
-  app.post("/upgrade", async (req, res) => {
-    hasPremium = true;
-    if (computer) {
-      try {
-        await updateComputerTimeout(computer, {
-          offline: 30,  // 30 seconds
-          inactive: 60, // 60 seconds
-          absolute: 60 * 60 * 2, // null // set the value to "null" to eliminate the timeout
-        });
-      } catch (e) {
-        console.error("updateComputerTimeout failed:", e);
-      }
+app.get("/", (_req, res) => {
+  res.sendFile("index.html", { root: import.meta.dirname });
+});
+
+app.post("/upgrade", async (_req, res) => {
+  hasPremium = true;
+  if (hb) {
+    try {
+      await updatehbTimeout(hb, {
+        offline: 30, // 30 seconds
+        inactive: 60, // 60 seconds
+        absolute: 60 * 60 * 2, // null // set the value to "null" to eliminate the timeout
+      });
+    } catch (e) {
+      console.error("updatehbTimeout failed:", e);
     }
-    console.log("Upgraded to premium");
-    res.sendStatus(200);
-  });
+  }
+  console.log("Upgraded to premium");
+  res.status(200).send();
+});
 
-  app.post("/cancel", async (req, res) => {
-    hasPremium = false;
-    if (computer) {
-      try {
-        await updateComputerTimeout(computer, {
-          offline: 10,  // 10 seconds
-          inactive: 30, // 30 seconds
-          absolute: 60, // 60 seconds
-          reset: false,
-        });
-      } catch (e) {
-        console.error("updateComputerTimeout failed:", e);
-      }
-    }
-    console.log("Cancelled premium");
-    res.sendStatus(200);
-  });
-
-  app.get("/computer", async (req, res) => {
-    if (computer) {
-      res.send(computer);
-      return;
-    }
-    const settings = {
-      ublock: true,
-      // Timeout values are in seconds
-      // In this example, we pick low values so you can quickly see the timeouts in action
-      timeout: {
-        offline: 10,  // 10 seconds
+app.post("/cancel", async (_req, res) => {
+  hasPremium = false;
+  if (hb) {
+    try {
+      await updatehbTimeout(hb, {
+        offline: 10, // 10 seconds
         inactive: 30, // 30 seconds
         absolute: 60, // 60 seconds
-        warning: 15,  // 15 seconds
-        webhook: {
-          url: webhookUrl,
-          bearer,
-        },
-      },
-    };
-    const headers = {
-      Authorization: `Bearer ${process.env.HB_API_KEY}`,
-    };
-    const resp = await axios.post(
-      "https://engine.hyperbeam.com/v0/vm",
-      settings,
-      { headers }
-    );
-    computer = resp.data;
-    res.send({
-      hasPremium,
-      computer,
-    });
-  });
-
-  app.post("/webhook", async (req, res) => {
-    const { session_id, type } = req.body;
-    const incomingBearer = req.get("Authorization").slice(7); // Slice off "Bearer " prefix
-    if (bearer !== incomingBearer) {
-      console.log(`Incorrect incoming bearer token, token=${incomingBearer}`);
-      res.sendStatus(401);
-      return;
+        reset: false,
+      });
+    } catch (e) {
+      console.error("updatehbTimeout failed:", e);
     }
-    console.log(
-      `Hyperbeam computer with session_id=${session_id} timed out, timeout type=${type}`
-    );
-    computer = undefined;
-    res.sendStatus(200);
-  });
+  }
+  console.log("Cancelled premium");
+  res.status(200).send();
+});
 
-  app.listen(port, () => {
-    console.log(`Server started at http://localhost:${port.toString()}`);
-  });
-}
-
-async function main() {
-  let bearerBytes;
+app.get("/hb", async (req, res) => {
   try {
-    bearerBytes = await randomBytes(32);
-  } catch (e) {
-    console.error(
-      "crypto failed to generate 32 random bytes for webhook token:",
-      e
-    );
+    if (!hb) {
+      hb = await fetchHb({
+        ...hbConfig,
+        dark: req.query["dark"] === "1",
+      });
+    }
+    res.json({ hasPremium, hb });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to create Hyperbeam virtual computer" });
+  }
+});
+
+app.post("/webhook", async (req, res) => {
+  const { session_id, type } = req.body;
+  const incomingBearer = req.get("Authorization").slice(7); // Slice off "Bearer " prefix
+  if (bearer !== incomingBearer) {
+    console.log(`Incorrect incoming bearer token, token=${incomingBearer}`);
+    res.status(401).send();
     return;
   }
-  try {
-    const tunnel = await localtunnel({ port });
-    const bearer = Buffer.from(bearerBytes).toString("base64");
-    console.log(`Receiving webhook messages from ${tunnel.url}`);
-    listen(`${tunnel.url}/webhook`, bearer);
-  } catch (e) {
-    console.error(`localtunnel failed to expose port ${port.toString()}:`, e);
-  }
-}
+  console.log(
+    `Hyperbeam hb with session_id=${session_id} timed out, timeout type=${type}`
+  );
+  hb = undefined;
+  res.status(200).send();
+});
 
-main();
+const server = await listen(app, 8080);
+const port = server.address().port;
+const tunnel = await localtunnel({ port });
+console.log(`Receiving webhook requests from ${tunnel.url}`);
+launch(server);
+
+const hbConfig = {
+  ...baseConfig,
+  // Timeout values are in seconds
+  // In this example, we pick low values so you can quickly see the timeouts in action
+  timeout: {
+    offline: 10, // 10 seconds
+    inactive: 30, // 30 seconds
+    absolute: 60, // 60 seconds
+    warning: 15, // 15 seconds
+    webhook: {
+      url: `${tunnel.url}/webhook`,
+      bearer,
+    },
+  },
+};

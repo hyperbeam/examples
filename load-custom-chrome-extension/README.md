@@ -1,6 +1,6 @@
-# Hyperbeam Chrome Extension example
+# Load custom Chrome Extension
 
-Upload your custom Chrome extensions to Hyperbeam virtual computers 👏
+Upload and use a custom Chrome extension in the Hyperbeam virtual computer.
 
 ## New to Chrome extensions?
 
@@ -15,56 +15,36 @@ In this example, we'll be loading the "Hello Extensions" extension in the Hyperb
 
 // Create a form data object with the extension zip file
 const formData = new FormData();
-formData.append("ex", fs.createReadStream("./extension.zip"));
-formData.append("body", JSON.stringify(vmConfig));
-
-// Add authorization headers
-const headers = formData.getHeaders();
-headers["Authorization"] = `Bearer ${process.env.HB_API_KEY}`;
+const blob = await openAsBlob("./extension.zip", {
+  type: "application/zip",
+});
+formData.append("ex", blob);
+formData.append("body", JSON.stringify(hbConfig));
 
 // Send a POST request to the Hyperbeam API with the form data
-const response = await post("https://engine.hyperbeam.com/v0/vm", formData, {
-  headers,
+const resp = await fetch("https://engine.hyperbeam.com/v0/vm", {
+  method: "POST",
+  headers: {
+    authorization: process.env.HB_API_KEY,
+  },
+  body: formData,
 });
 ```
 
 ## Steps
 
-- Use `npm install` to install the dependencies altogether and navigate to the examples you want to run for more information.
-- Set your API key by running the following command in your terminal:
-
-```bash
-
-# Linux/macOS
-export HB_API_KEY=your_api_key
-
-# Windows
-set HB_API_KEY=your_api_key
-```
-
-Replace `your_api_key` with your API key from the [Hyperbeam dashboard](https://hyperbeam.com/dashboard).
-
-- Run `npm run start`, a server should be listening on port 8080.
-
-- Visit <http://localhost:8080>. You should see the "Hello Extensions" extension pinned in Chrome.
+- Run `npm start` to launch the demo.
+- You should see the "Hello Extensions" extension pinned in the Hyperbeam virtual computer.
 
 ![image](https://user-images.githubusercontent.com/18666879/195963632-03abbb3b-021f-4390-9c0d-e4c9c2fef4e0.png)
 
+Also see `script.sh` to see how to use `curl` to load the extension in the Hyperbeam virtual computer instance.
+
 ## Modifying the extension
 
-Have you modified the extension code and want to run your modified extension? First, terminate the server by pressing CTRL+C. After that, run the following commands:
-
-```bash
-
-npm run build
-npm run start
-
-```
-
-Then, visit <http://localhost:8080>.
-
-Alternatively, run `npm run script` to run `script.sh`, which starts a virtual computer with the Chrome extension using `curl`.
+- Run `npm run zip` to recreate the extension zip file.
+- Terminate the server and rerun `npm start` to relaunch the demo.
 
 ## Need more help?
 
-Send us an email at [founders@hyperbeam.com](mailto:founders@hyperbeam.com) or join our community [Discord server](https://discord.gg/D78RsGfQjq).
+Send us an email at [support@hyperbeam.com](mailto:support@hyperbeam.com) or join our developer community [Discord server](https://discord.gg/D78RsGfQjq).

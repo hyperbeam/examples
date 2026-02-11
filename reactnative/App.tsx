@@ -8,19 +8,17 @@
  * @format
  */
 
-import React from 'react';
-import WebView from 'react-native-webview';
+import React from "react";
+import WebView from "react-native-webview";
 import {
   SafeAreaView,
   StyleSheet,
   StatusBar,
   useColorScheme,
   View,
-} from 'react-native';
+} from "react-native";
 
-import {
-  Colors,
-} from 'react-native/Libraries/NewAppScreen';
+import { Colors } from "react-native/Libraries/NewAppScreen";
 
 const html = /*html*/ `
  <html>
@@ -32,7 +30,7 @@ const html = /*html*/ `
      async function getDemoURL() {
       const demoResponse = await fetch("https://demo-api.tutturu.workers.dev/");
       if(!demoResponse.ok) {
-        alert("Failed to get demo computer, please try again later");
+        alert("We are out of demo servers! Visit hyperbeam.com to get your own API key");
         return "";
       }
       const data = await demoResponse.json();
@@ -59,28 +57,27 @@ const html = /*html*/ `
 const viewStyle = StyleSheet.create({
   container: {
     flex: 1,
-    width: '100%',
+    width: "100%",
   },
 });
 
 const App = () => {
-  const isDarkMode = useColorScheme() === 'dark';
+  const isDarkMode = useColorScheme() === "dark";
 
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
     flex: 1,
-    width: '100%',
+    width: "100%",
   };
 
   return (
     <SafeAreaView style={backgroundStyle}>
       <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+        barStyle={isDarkMode ? "light-content" : "dark-content"}
         backgroundColor={backgroundStyle.backgroundColor}
       />
-      <View
-        style={viewStyle.container}>
-        <WebView originWhitelist={['*']} source={{ html }} />
+      <View style={viewStyle.container}>
+        <WebView originWhitelist={["*"]} source={{ html }} />
       </View>
     </SafeAreaView>
   );

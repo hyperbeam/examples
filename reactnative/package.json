@@ -1,13 +1,14 @@
 {
   "name": "reactnative",
-  "version": "0.0.1",
-  "private": true,
+  "version": "1.0.0",
+  "type": "module",
   "scripts": {
     "android": "react-native run-android",
     "ios": "react-native run-ios",
     "start": "react-native start",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
   },
+  "license": "0BSD",
   "dependencies": {
     "react": "18.1.0",
     "react-native": "0.70.6",
